@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Tirupati GeoTrip Planner</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#2e1500",
+                    "on-primary": "#ffffff",
+                    "primary": "#735c00",
+                    "tertiary-fixed": "#8df8b7",
+                    "surface-dim": "#dadadc",
+                    "on-secondary-fixed-variant": "#6d3a00",
+                    "surface": "#f9f9fc",
+                    "outline-variant": "#d0c5af",
+                    "primary-fixed": "#ffe088",
+                    "surface-tint": "#735c00",
+                    "primary-container": "#d4af37",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#5cc78a",
+                    "inverse-on-surface": "#f0f0f3",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#2f3133",
+                    "on-background": "#1a1c1e",
+                    "inverse-primary": "#e9c349",
+                    "primary-fixed-dim": "#e9c349",
+                    "on-secondary-container": "#683700",
+                    "on-surface-variant": "#4d4635",
+                    "surface-bright": "#f9f9fc",
+                    "on-primary-fixed-variant": "#574500",
+                    "on-tertiary-fixed-variant": "#00522f",
+                    "secondary-container": "#fe9832",
+                    "surface-container-low": "#f3f3f6",
+                    "tertiary-fixed-dim": "#70db9d",
+                    "on-surface": "#1a1c1e",
+                    "background": "#f9f9fc",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#ffb77a",
+                    "surface-container": "#eeeef0",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary": "#006d40",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#554300",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e2e2e5",
+                    "secondary-fixed": "#ffdcc2",
+                    "on-tertiary-container": "#00502e",
+                    "secondary": "#8f4e00",
+                    "surface-container-high": "#e8e8ea",
+                    "outline": "#7f7663",
+                    "surface-container-highest": "#e2e2e5",
+                    "on-primary-fixed": "#241a00",
+                    "on-tertiary-fixed": "#002110"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "lg": "40px",
+                    "md": "24px",
+                    "gutter": "24px",
+                    "sm": "12px",
+                    "xl": "64px",
+                    "base": "8px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Public Sans", "sans-serif"],
+                    "label-sm": ["Public Sans", "sans-serif"],
+                    "headline-md": ["Noto Serif", "serif"],
+                    "label-lg": ["Public Sans", "sans-serif"],
+                    "display-lg": ["Noto Serif", "serif"],
+                    "body-md": ["Public Sans", "sans-serif"],
+                    "headline-lg": ["Noto Serif", "serif"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+        html, body {
+            height: 100%;
+            max-height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+        .skip-link {
+            position: absolute;
+            left: 0.75rem;
+            top: 0.75rem;
+            z-index: 200;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            background: #78350f;
+            color: #fffbeb;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transform: translateY(-200%);
+            transition: transform 0.2s ease;
+        }
+        .skip-link:focus {
+            transform: translateY(0);
+            outline: 2px solid #fbbf24;
+            outline-offset: 2px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .landing-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+        .landing-max {
+            width: 100%;
+            max-width: 80rem;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        @media (min-width: 640px) {
+            .landing-max {
+                padding-left: 1.25rem;
+                padding-right: 1.25rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            .landing-max {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+        /* Split hero: image on top (mobile), text | image (desktop) */
+        .hero-split {
+            display: grid;
+            grid-template-columns: 1fr;
+            min-height: min(56vh, 36rem);
+        }
+        @media (min-width: 1024px) {
+            .hero-split {
+                grid-template-columns: 1fr 1fr;
+                min-height: min(58vh, 38rem);
+            }
+        }
+        .hero-split__visual {
+            position: relative;
+            order: -1;
+            min-height: 14rem;
+            background: #0f172a;
+        }
+        @media (min-width: 1024px) {
+            .hero-split__visual {
+                order: 0;
+                min-height: 100%;
+            }
+        }
+        .hero-split__visual-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 14rem;
+        }
+        @media (min-width: 1024px) {
+            .hero-split__visual-inner {
+                position: absolute;
+                inset: 0;
+                min-height: 0;
+            }
+        }
+        .hero-slideshow {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+        }
+        .hero-slideshow__stack {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 14rem;
+        }
+        @media (min-width: 1024px) {
+            .hero-slideshow__stack {
+                min-height: 0;
+            }
+        }
+        .hero-slideshow__frame {
+            position: absolute;
+            inset: 0;
+            border-radius: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.65s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hero-slideshow__frame.is-active {
+            opacity: 1;
+            z-index: 1;
+        }
+        .hero-slideshow__frame img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .hero-slideshow__frame {
+                transition: none;
+            }
+            .hero-slideshow__frame:not(.is-active) {
+                opacity: 0;
+                visibility: hidden;
+            }
+            .hero-slideshow__frame.is-active {
+                visibility: visible;
+            }
+        }
+        .hero-slideshow__controls {
+            position: absolute;
+            inset: auto 0.75rem 0.75rem 0.75rem;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            pointer-events: none;
+        }
+        .hero-slideshow__controls > * {
+            pointer-events: auto;
+        }
+        .hero-slideshow__nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border: none;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #92400e;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+        .hero-slideshow__nav-btn:hover {
+            background: #fff;
+            transform: scale(1.05);
+        }
+        .hero-slideshow__nav-btn:focus-visible {
+            outline: 2px solid #fbbf24;
+            outline-offset: 2px;
+        }
+        .hero-slideshow__dots {
+            display: flex;
+            gap: 0.35rem;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-width: 0;
+        }
+        .hero-slideshow__dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            padding: 0;
+            border: none;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.55);
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .hero-slideshow__dot[aria-current="true"] {
+            background: #d97706;
+            transform: scale(1.15);
+        }
+        .hero-slideshow__dot:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .cat-rail {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 0.35rem;
+            margin-inline: -0.25rem;
+            padding-inline: 0.25rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        .cat-rail > a,
+        .cat-rail > button.cat-rail-card {
+            flex: 0 0 min(86vw, 22rem);
+            scroll-snap-align: start;
+        }
+        @media (min-width: 640px) {
+            .cat-rail > a,
+            .cat-rail > button.cat-rail-card {
+                flex-basis: min(42vw, 22rem);
+            }
+        }
+        @media (min-width: 1024px) {
+            .cat-rail > a,
+            .cat-rail > button.cat-rail-card {
+                flex-basis: min(24%, 20rem);
+            }
+        }
+        .cat-rail-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 22rem;
+            width: 100%;
+            border-radius: 1rem;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.15);
+            text-decoration: none;
+            color: inherit;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        button.cat-rail-card {
+            -webkit-appearance: none;
+            appearance: none;
+            padding: 0;
+        }
+        .cat-rail-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 40px -14px rgba(115, 92, 0, 0.2);
+            border-color: rgba(217, 119, 6, 0.55);
+        }
+        .cat-rail-card:focus-visible {
+            outline: 2px solid #d97706;
+            outline-offset: 3px;
+        }
+        .category-card-hidden {
+            display: none !important;
+        }
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.4rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border: 1px solid rgba(217, 119, 6, 0.35);
+            background: rgba(255, 251, 235, 0.95);
+            color: #92400e;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .filter-chip:hover {
+            background: #fef3c7;
+            border-color: rgba(217, 119, 6, 0.55);
+        }
+        .filter-chip:focus-visible {
+            outline: 2px solid #d97706;
+            outline-offset: 2px;
+        }
+        .filter-chip.is-active {
+            background: linear-gradient(135deg, #d4af37, #e9c349);
+            color: #422006;
+            border-color: rgba(120, 53, 15, 0.35);
+        }
+        .site-header {
+            box-shadow: 0 1px 0 rgba(245, 158, 11, 0.15);
+        }
+        .site-header__start {
+            min-width: 0;
+        }
+        .site-header__nav {
+            flex-wrap: nowrap;
+            row-gap: 0;
+        }
+        .site-header__brand {
+            display: flex;
+            min-width: 0;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+        }
+        /* Logo + CTA: grid columns + gap; logo scales to show full strip (contain) */
+        .site-header__end {
+            display: inline-flex;
+            flex-wrap: nowrap;
+            gap: 0.65rem;
+            align-items: center;
+            justify-self: end;
+            flex-shrink: 0;
+            min-width: 0;
+        }
+        @media (min-width: 640px) {
+            .site-header__end {
+                gap: 0.75rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            .site-header__end {
+                gap: 0.875rem;
+            }
+        }
+        .site-header__center {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+            transform: none;
+        }
+        /* Full banner visible: height cap + wide max-width, object-fit contain (no hard crop) */
+        .site-header__logo-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 3.7rem;
+            max-height: 4.7rem;
+            max-width: min(calc(100vw - 7rem), 27rem);
+            width: auto;
+            border-radius: 0.25rem;
+            box-sizing: border-box;
+            min-width: 8.5rem;
+        }
+        @media (min-width: 480px) {
+            .site-header__logo-wrap {
+                height: 4rem;
+                max-width: min(calc(100vw - 14rem), 29rem);
+            }
+        }
+        @media (min-width: 640px) {
+            .site-header__logo-wrap {
+                height: 4.6rem;
+                max-width: min(calc(100vw - 20rem), 32rem);
+            }
+        }
+        @media (min-width: 1024px) {
+            .site-header__logo-wrap {
+                height: 5.1rem;
+                max-width: min(39vw, 28rem);
+            }
+        }
+        .site-header__brand-logo {
+            display: block;
+            box-sizing: border-box;
+            height: 100%;
+            /* width: 100%; */
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            object-position: left center;
+        }
+        .site-header__cta-packages {
+            white-space: nowrap;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        .site-header__cta-map {
+            white-space: nowrap;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        @media (min-width: 1024px) {
+            .site-header__layout {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+                align-items: center;
+                gap: 1.25rem;
+            }
+            .site-header__start {
+                justify-self: start;
+                width: 100%;
+                margin-left: 0;
+                min-width: 0;
+            }
+            .site-header__center {
+                grid-column: 2;
+                justify-self: center;
+                margin-right: 0;
+            }
+            .site-header__end {
+                grid-column: 3;
+                justify-self: end;
+                min-width: 0;
+            }
+            .site-header__brand {
+                margin-left: 0;
+                padding-left: 0;
+            }
+            .site-header__nav {
+                gap: 0.55rem;
+            }
+        }
+        /* Keep logo large: avoid overlap by reducing left-nav density on narrower desktop widths. */
+        @media (min-width: 1024px) and (max-width: 1279px) {
+            .site-header__nav {
+                display: none !important;
+            }
+            .site-header__start {
+                flex: 0 1 auto;
+            }
+        }
+        .site-header__brand-titles {
+            display: flex;
+            min-width: 0;
+            flex-wrap: nowrap;
+            align-items: baseline;
+            gap: 0.35rem;
+            white-space: nowrap;
+        }
+        @media (min-width: 640px) {
+            .site-header__brand-titles {
+                gap: 0.45rem;
+            }
+        }
+        .site-header__brand-sub {
+            flex-shrink: 1;
+            min-width: 0;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: #57534e;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        @media (min-width: 640px) {
+            .site-header__brand-sub {
+                font-size: 0.8125rem;
+            }
+        }
+        .site-header__link {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: #78350f;
+            text-decoration: none;
+            padding: 0.35rem 0.5rem;
+            border-radius: 0.5rem;
+            transition: background 0.15s ease, color 0.15s ease;
+            white-space: nowrap;
+        }
+        .site-header__link:hover {
+            background: rgba(254, 243, 199, 0.85);
+            color: #451a03;
+        }
+        .site-header__link:focus-visible {
+            outline: 2px solid #d97706;
+            outline-offset: 2px;
+        }
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.75rem;
+            height: 2.75rem;
+            border: none;
+            border-radius: 9999px;
+            background: transparent;
+            color: #b45309;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .icon-btn:hover {
+            background: rgba(251, 191, 36, 0.2);
+        }
+        .icon-btn:focus-visible {
+            outline: 2px solid #d97706;
+            outline-offset: 2px;
+        }
+        .mobile-nav-backdrop {
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        .mobile-nav-backdrop.is-open {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+        }
+        .mobile-nav-panel {
+            transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .mobile-nav-panel.is-open {
+            transform: translateX(0) !important;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .mobile-nav-backdrop,
+            .mobile-nav-panel,
+            .cat-rail-card {
+                transition: none;
+            }
+        }
+        .drawer-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .drawer-nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: #78350f;
+            background: rgba(255, 251, 235, 0.9);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+        .drawer-nav a:hover {
+            background: #fef3c7;
+        }
+        .planner-preflight-dialog {
+            width: min(100% - 2rem, 26rem);
+            max-height: min(92vh, 36rem);
+            margin: auto;
+            padding: 0;
+            border: none;
+            border-radius: 1rem;
+            background: #fff;
+            color: #1a1c1e;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
+        }
+        .planner-preflight-dialog::backdrop {
+            background: rgba(15, 23, 42, 0.45);
+        }
+        .planner-preflight-dialog__inner {
+            display: flex;
+            max-height: min(92vh, 36rem);
+            flex-direction: column;
+        }
+        .planner-preflight-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 1rem 1rem 0.5rem 1.25rem;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+        }
+        .planner-preflight-head h2 {
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 700;
+            font-family: "Noto Serif", serif;
+            color: #451a03;
+        }
+        .planner-preflight-head p {
+            margin: 0.25rem 0 0;
+            font-size: 0.8125rem;
+            color: #57534e;
+            line-height: 1.4;
+        }
+        .planner-preflight-close {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.25rem;
+            height: 2.25rem;
+            margin-top: -0.15rem;
+            margin-right: -0.15rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: transparent;
+            color: #57534e;
+            cursor: pointer;
+        }
+        .planner-preflight-close:hover {
+            background: #fef3c7;
+            color: #451a03;
+        }
+        .planner-preflight-close:focus-visible {
+            outline: 2px solid #d97706;
+            outline-offset: 2px;
+        }
+        .planner-preflight-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 1rem 1.25rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+        .planner-preflight-legend {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #78716c;
+            margin-bottom: 0.35rem;
+        }
+        .planner-preflight-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+        .planner-preflight-chips button {
+            padding: 0.35rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border: 1px solid rgba(217, 119, 6, 0.35);
+            background: #fffbeb;
+            color: #92400e;
+            cursor: pointer;
+        }
+        .planner-preflight-chips button.is-active {
+            background: linear-gradient(135deg, #d4af37, #e9c349);
+            color: #422006;
+            border-color: rgba(120, 53, 15, 0.35);
+        }
+        .planner-preflight-chips button:focus-visible {
+            outline: 2px solid #d97706;
+            outline-offset: 2px;
+        }
+        .planner-preflight-field label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #57534e;
+            margin-bottom: 0.25rem;
+        }
+        .planner-preflight-field input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.5rem 0.65rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d6d3d1;
+            font-size: 0.9375rem;
+        }
+        .planner-preflight-field input:focus {
+            border-color: #d97706;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
+        }
+        .planner-preflight-hint {
+            margin: 0.35rem 0 0;
+            font-size: 0.7rem;
+            color: rgba(55, 48, 40, 0.72);
+            line-height: 1.35;
+        }
+        .planner-preflight-row2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.65rem;
+        }
+        .planner-preflight-foot {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            padding: 0.85rem 1.25rem 1.1rem;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            background: #fafaf9;
+            border-radius: 0 0 1rem 1rem;
+        }
+        .planner-preflight-foot button {
+            min-height: 2.5rem;
+            padding: 0 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #d6d3d1;
+            background: #fff;
+            color: #44403c;
+        }
+        .planner-preflight-foot button:hover {
+            background: #f5f5f4;
+        }
+        .planner-preflight-go {
+            border: none !important;
+            background: #8f4e00 !important;
+            color: #fff !important;
+            padding-inline: 1.15rem;
+        }
+        .planner-preflight-go:hover {
+            filter: brightness(1.05);
+        }
+        .planner-preflight-go:focus-visible {
+            outline: 2px solid #d97706;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="font-body-md flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-slate-100 text-on-surface antialiased">
+<a class="skip-link" href="#mainContent">Skip to main content</a>
+
+<header class="site-header sticky top-0 z-50 shrink-0 border-b border-amber-200/60 bg-white/95 backdrop-blur-md">
+<div class="site-header__layout flex min-h-[4.3rem] min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 py-2.5 px-7 sm:min-h-[4.8rem] sm:gap-x-4 overflow:hidden sm:py-3">
+<div class="site-header__start flex min-w-0 flex-1 items-center gap-2 sm:gap-3 lg:gap-4">
+<button type="button" id="mobileNavOpen" class="icon-btn shrink-0 lg:hidden" aria-expanded="false" aria-controls="mobileNavPanel" aria-label="Open menu">
+<span class="material-symbols-outlined text-2xl" aria-hidden="true">menu</span>
+</button>
+<a href="main_page.html" class="site-header__brand min-w-0 shrink ml-auto">
+<span class="site-header__brand-titles font-headline-lg">
+<span class="min-w-0 shrink truncate text-xl font-bold tracking-tight text-amber-800 sm:text-2xl">GeoTrip Planner</span>
+</span>
+</a>
+<nav class="site-header__nav hidden min-w-0 flex-1 items-center justify-start gap-1 lg:flex" aria-label="Primary">
+<a class="site-header__link" href="packages.html">Packages</a>
+<a class="site-header__link" href="budget_calculator.html">Budget &amp; map planner</a>
+</nav>
+</div>
+<div class="site-header__center">
+<span class="site-header__logo-wrap">
+<img src="images/geointellab_logo.jpeg" alt="Geo-Intel Lab, IIT Tirupati Navavishkār I-Hub Foundation" class="site-header__brand-logo" width="520" height="104" decoding="async" loading="eager"/>
+</span>
+</div>
+<div class="site-header__end">
+<a href="packages.html" class="site-header__cta-packages inline-flex items-center justify-center rounded-full border border-amber-600/35 bg-white px-4 py-2 text-sm font-semibold text-amber-900 shadow-sm ring-1 ring-black/5 transition hover:bg-amber-50 sm:px-5 sm:text-base">
+                Packages
+            </a>
+<a href="budget_calculator.html" class="site-header__cta-map inline-flex items-center justify-center rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-on-secondary shadow-sm ring-1 ring-black/5 transition hover:brightness-[1.03] sm:px-5 sm:text-base">
+                Open map
+            </a>
+</div>
+</div>
+</header>
+
+<main id="mainContent" class="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden" tabindex="-1">
+<div class="landing-scroll">
+<!-- Split hero -->
+<section class="hero-split border-b border-amber-900/10 bg-slate-900" aria-labelledby="heroTitle">
+<div class="flex flex-col justify-center gap-4 px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-14">
+<p class="text-sm font-bold uppercase tracking-[0.16em] text-amber-300/90 sm:text-base sm:tracking-[0.18em]">Tirumala &amp; Tirupati</p>
+<h1 id="heroTitle" class="font-display-lg text-3xl font-bold leading-tight tracking-tight text-amber-50 sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]">
+                    Plan routes, darshan days, and scenic stops in one map-first workspace.
+                </h1>
+<p class="max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
+                    Filter by food, temples, adventure, wildlife, or sightseeing—see distances, timings context, and a trip summary before you go.
+                </p>
+<div class="flex flex-wrap items-center gap-3 pt-1">
+<a href="budget_calculator.html" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary-container px-6 py-3 text-base font-bold text-on-primary-container shadow-lg transition hover:brightness-[1.05]">
+<span class="material-symbols-outlined" aria-hidden="true">map</span>
+                        Start planning
+                    </a>
+<a href="#categorySection" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-amber-400/50 bg-transparent px-5 py-3 text-base font-semibold text-amber-100 transition hover:bg-white/10">
+                        Categories
+                    </a>
+</div>
+</div>
+<div class="hero-split__visual">
+<div class="hero-split__visual-inner">
+<div class="hero-slideshow" role="region" aria-label="Tirupati photo slideshow" id="heroSlideshowRegion">
+<div class="hero-slideshow__stack" id="heroPhotoStack" aria-live="polite">
+<div class="hero-slideshow__frame is-active" data-label="Tirumala temple" data-index="0">
+<img alt="Tirumala temple" decoding="async" loading="eager" src="images/tirumala-temple.jpg"/>
+</div>
+<div class="hero-slideshow__frame" data-label="ISKCON Tirupati" data-index="1">
+<img alt="ISKCON temple Tirupati" decoding="async" loading="lazy" src="images/iskcon-temple-tirupati-th-july-beautiful-view-288524202.webp"/>
+</div>
+<div class="hero-slideshow__frame" data-label="Tirupati vista" data-index="2">
+<img alt="Tirupati hills and surroundings" decoding="async" loading="lazy" src="images/1722415463_tg423ymIQQ.png"/>
+</div>
+</div>
+<div class="hero-slideshow__controls" id="heroSlideshowControls">
+<button type="button" class="hero-slideshow__nav-btn" id="heroPrev" aria-label="Previous photo">
+<span class="material-symbols-outlined text-xl" aria-hidden="true">chevron_left</span>
+</button>
+<div class="hero-slideshow__dots" id="heroDots" role="group" aria-label="Choose photo"></div>
+<button type="button" class="hero-slideshow__nav-btn" id="heroNext" aria-label="Next photo">
+<span class="material-symbols-outlined text-xl" aria-hidden="true">chevron_right</span>
+</button>
+</div>
+</div>
+<p class="absolute bottom-[3.25rem] left-0 right-0 z-[3] text-center text-[10px] font-semibold uppercase tracking-wider text-white/95 drop-shadow-md sm:bottom-[3.5rem]" id="heroSlideCaption">Tirumala temple</p>
+</div>
+</div>
+</section>
+
+<div class="landing-max space-y-8 py-8 sm:space-y-10 sm:py-10 lg:space-y-12 lg:py-12">
+<!-- Live counts -->
+<section class="grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4" aria-label="Place counts by category">
+<div class="rounded-2xl border border-amber-200/60 bg-white p-4 shadow-sm">
+<p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Food</p>
+<p class="mt-1 text-3xl font-bold tabular-nums text-primary sm:text-4xl" id="countFood">—</p>
+</div>
+<div class="rounded-2xl border border-emerald-200/60 bg-white p-4 shadow-sm">
+<p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Adventure</p>
+<p class="mt-1 text-3xl font-bold tabular-nums text-tertiary sm:text-4xl" id="countAdventure">—</p>
+</div>
+<div class="rounded-2xl border border-lime-200/70 bg-white p-4 shadow-sm">
+<p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Wildlife</p>
+<p class="mt-1 text-3xl font-bold tabular-nums text-lime-700 sm:text-4xl" id="countWildlife">—</p>
+</div>
+<div class="rounded-2xl border border-amber-300/70 bg-white p-4 shadow-sm">
+<p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Temples</p>
+<p class="mt-1 text-3xl font-bold tabular-nums text-primary-container sm:text-4xl" id="countTemple">—</p>
+</div>
+<div class="rounded-2xl border border-blue-200/60 bg-white p-4 shadow-sm">
+<p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Sightseeing</p>
+<p class="mt-1 text-3xl font-bold tabular-nums text-blue-700 sm:text-4xl" id="countSightseeing">—</p>
+</div>
+</section>
+
+<!-- How it works -->
+<section id="howItWorks" class="rounded-2xl border border-amber-200/50 bg-white/90 p-5 shadow-sm sm:p-6 lg:p-8">
+<h2 class="font-headline-lg text-xl font-semibold text-on-surface sm:text-2xl">How it works</h2>
+<div class="mt-5 grid gap-4 sm:grid-cols-3 sm:gap-6">
+<div class="flex gap-3 rounded-xl bg-slate-50/90 p-4 ring-1 ring-slate-200/80">
+<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-sm font-bold text-on-primary-container">1</span>
+<div>
+<p class="font-semibold text-on-surface">Pick a theme</p>
+<p class="mt-1 text-sm leading-relaxed text-on-surface-variant">Choose food, adventure, wildlife, temples, or sightseeing—or type in the filter below.</p>
+</div>
+</div>
+<div class="flex gap-3 rounded-xl bg-slate-50/90 p-4 ring-1 ring-slate-200/80">
+<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-sm font-bold text-on-primary-container">2</span>
+<div>
+<p class="font-semibold text-on-surface">Open the map</p>
+<p class="mt-1 text-sm leading-relaxed text-on-surface-variant">Tap a theme card to set map filters in a popup, then go to the planner with those choices applied.</p>
+</div>
+</div>
+<div class="flex gap-3 rounded-xl bg-slate-50/90 p-4 ring-1 ring-slate-200/80">
+<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-sm font-bold text-on-primary-container">3</span>
+<div>
+<p class="font-semibold text-on-surface">Build your day</p>
+<p class="mt-1 text-sm leading-relaxed text-on-surface-variant">Add stops, compare distances, and read the trip summary before you head out.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Categories: search + horizontal rail -->
+<section id="categorySection" class="space-y-4" aria-labelledby="categoryHeading">
+<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+<div>
+<h2 id="categoryHeading" class="font-headline-lg text-xl font-semibold text-on-surface sm:text-2xl">Choose a starting theme</h2>
+<p class="mt-1 max-w-2xl text-sm text-on-surface-variant sm:text-base">Scroll sideways on small screens. Cards respect your filter and quick chips.</p>
+</div>
+</div>
+<label class="sr-only" for="navSearch">Filter categories</label>
+<div class="relative max-w-xl">
+<span class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-amber-800/70" aria-hidden="true">search</span>
+<input id="navSearch" class="w-full rounded-xl border border-amber-200/80 bg-white py-3 pl-11 pr-4 text-base text-on-surface shadow-sm placeholder:text-on-surface-variant/70 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40" placeholder="Type to filter (e.g. temple, wildlife, trek, food…)" type="search" autocomplete="off" inputmode="search"/>
+</div>
+<div class="flex flex-wrap gap-2" id="filterChips" role="group" aria-label="Quick filters">
+<button type="button" class="filter-chip is-active" data-set-filter="">All</button>
+<button type="button" class="filter-chip" data-set-filter="food">Food</button>
+<button type="button" class="filter-chip" data-set-filter="temple">Temples</button>
+<button type="button" class="filter-chip" data-set-filter="adventure">Adventure</button>
+<button type="button" class="filter-chip" data-set-filter="wildlife">Wildlife</button>
+<button type="button" class="filter-chip" data-set-filter="sight">Sightseeing</button>
+</div>
+<p id="categoryFilterStatus" class="sr-only" aria-live="polite"></p>
+<p id="categoryEmpty" class="hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-on-surface-variant" role="status">No themes match. Clear the filter or tap “All”.</p>
+
+<div id="categoryGrid" class="cat-rail pb-1">
+<button type="button" data-category-card="food" data-theme-label="Food" data-search-text="food prasadam vegetarian meal dining restaurant local spots" class="cat-rail-card group">
+<div class="relative h-36 shrink-0 overflow-hidden bg-amber-100">
+<img alt="Traditional vegetarian meal and prasadam" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" decoding="async" loading="lazy" src="images/food%20image.jpg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent"></div>
+<span class="material-symbols-outlined absolute right-3 top-3 rounded-lg bg-white/90 p-2 text-amber-700 shadow-sm" aria-hidden="true">restaurant</span>
+</div>
+<div class="flex flex-1 flex-col gap-2 p-4">
+<h3 class="font-headline-md text-lg font-semibold text-on-surface">Food</h3>
+<p class="text-sm leading-relaxed text-on-surface-variant">Prasadam and local vegetarian favourites.</p>
+<div class="mt-auto flex items-end justify-between border-t border-amber-100 pt-3">
+<span class="text-xs font-bold uppercase tracking-wide text-on-surface-variant">In data</span>
+<span class="text-2xl font-bold tabular-nums text-primary" id="countFoodCard">20</span>
+</div>
+<span class="inline-flex items-center gap-1 text-sm font-semibold text-secondary">Set map filters <span class="material-symbols-outlined text-lg" aria-hidden="true">tune</span></span>
+</div>
+</button>
+<button type="button" data-category-card="adventure" data-theme-label="Adventure" data-search-text="adventure hills forest trails trekking trek nature landscape outdoor" class="cat-rail-card group">
+<div class="relative h-36 shrink-0 overflow-hidden bg-emerald-100">
+<img alt="Hills and forest trails for trekking" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" decoding="async" loading="lazy" src="images/adventure%20image.jpg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent"></div>
+<span class="material-symbols-outlined absolute right-3 top-3 rounded-lg bg-white/90 p-2 text-emerald-700 shadow-sm" aria-hidden="true">landscape</span>
+</div>
+<div class="flex flex-1 flex-col gap-2 p-4">
+<h3 class="font-headline-md text-lg font-semibold text-on-surface">Adventure</h3>
+<p class="text-sm leading-relaxed text-on-surface-variant">Hills, forest trails, and treks.</p>
+<div class="mt-auto flex items-end justify-between border-t border-emerald-100 pt-3">
+<span class="text-xs font-bold uppercase tracking-wide text-on-surface-variant">In data</span>
+<span class="text-2xl font-bold tabular-nums text-tertiary" id="countAdventureCard">20</span>
+</div>
+<span class="inline-flex items-center gap-1 text-sm font-semibold text-secondary">Set map filters <span class="material-symbols-outlined text-lg" aria-hidden="true">tune</span></span>
+</div>
+</button>
+<button type="button" data-category-card="wildlife" data-theme-label="Wildlife" data-search-text="wildlife sanctuary national park deer peacock birds safari reserve crocodile zoo nature fauna" class="cat-rail-card group">
+<div class="relative h-36 shrink-0 overflow-hidden bg-lime-100">
+<img alt="Wildlife habitats and sanctuary zones near Tirupati" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" decoding="async" loading="lazy" src="images/site%20seeng%20image.avif"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent"></div>
+<span class="material-symbols-outlined absolute right-3 top-3 rounded-lg bg-white/90 p-2 text-lime-700 shadow-sm" aria-hidden="true">pets</span>
+</div>
+<div class="flex flex-1 flex-col gap-2 p-4">
+<h3 class="font-headline-md text-lg font-semibold text-on-surface">Wildlife</h3>
+<p class="text-sm leading-relaxed text-on-surface-variant">Sanctuaries, deer parks, bird zones, and eco reserves.</p>
+<div class="mt-auto flex items-end justify-between border-t border-lime-100 pt-3">
+<span class="text-xs font-bold uppercase tracking-wide text-on-surface-variant">In data</span>
+<span class="text-2xl font-bold tabular-nums text-lime-700" id="countWildlifeCard">20</span>
+</div>
+<span class="inline-flex items-center gap-1 text-sm font-semibold text-secondary">Set map filters <span class="material-symbols-outlined text-lg" aria-hidden="true">tune</span></span>
+</div>
+</button>
+<button type="button" data-category-card="temple" data-theme-label="Temples" data-search-text="temple temples shrine darshan venkateswara spiritual hindu worship pilgrimage" class="cat-rail-card group ring-2 ring-primary-container/25">
+<div class="relative h-36 shrink-0 overflow-hidden bg-amber-200/80">
+<img alt="Ornate temple gopuram and shrine architecture" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" decoding="async" loading="lazy" src="images/temple%20image.jpg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent"></div>
+<span class="material-symbols-outlined absolute right-3 top-3 rounded-lg bg-white/90 p-2 text-primary-container shadow-sm" aria-hidden="true">temple_hindu</span>
+</div>
+<div class="flex flex-1 flex-col gap-2 p-4">
+<h3 class="font-headline-md text-lg font-semibold text-on-surface">Temples</h3>
+<p class="text-sm leading-relaxed text-on-surface-variant">Shrines and Venkateswara complexes.</p>
+<div class="mt-auto flex items-end justify-between border-t border-amber-100 pt-3">
+<span class="text-xs font-bold uppercase tracking-wide text-on-surface-variant">In data</span>
+<span class="text-2xl font-bold tabular-nums text-primary-container" id="countTempleCard">20</span>
+</div>
+<span class="inline-flex items-center gap-1 text-sm font-semibold text-secondary">Set map filters <span class="material-symbols-outlined text-lg" aria-hidden="true">tune</span></span>
+</div>
+</button>
+<button type="button" data-category-card="sightseeing" data-theme-label="Sightseeing" data-search-text="sightseeing viewpoints waterfall heritage scenic photo camera parks monuments" class="cat-rail-card group">
+<div class="relative h-36 shrink-0 overflow-hidden bg-blue-100">
+<img alt="Scenic viewpoints and heritage landscapes" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" decoding="async" loading="lazy" src="images/site%20seeng%20image.avif"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent"></div>
+<span class="material-symbols-outlined absolute right-3 top-3 rounded-lg bg-white/90 p-2 text-blue-700 shadow-sm" aria-hidden="true">photo_camera</span>
+</div>
+<div class="flex flex-1 flex-col gap-2 p-4">
+<h3 class="font-headline-md text-lg font-semibold text-on-surface">Sightseeing</h3>
+<p class="text-sm leading-relaxed text-on-surface-variant">Viewpoints, waterfalls, and heritage.</p>
+<div class="mt-auto flex items-end justify-between border-t border-blue-100 pt-3">
+<span class="text-xs font-bold uppercase tracking-wide text-on-surface-variant">In data</span>
+<span class="text-2xl font-bold tabular-nums text-blue-700" id="countSightseeingCard">20</span>
+</div>
+<span class="inline-flex items-center gap-1 text-sm font-semibold text-secondary">Set map filters <span class="material-symbols-outlined text-lg" aria-hidden="true">tune</span></span>
+</div>
+</button>
+</div>
+</section>
+
+<!-- CTA band -->
+<section class="rounded-2xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-800 p-6 text-center shadow-lg sm:p-8 lg:p-10" aria-label="Call to action">
+<p class="font-headline-lg text-xl font-semibold text-amber-50 sm:text-2xl">Ready to lay your day on the map?</p>
+<p class="mx-auto mt-2 max-w-lg text-sm text-amber-100/95 sm:text-base">Jump into the full planner with layers, filters, and trip summary.</p>
+<a href="budget_calculator.html" class="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-8 py-3 text-base font-bold text-amber-900 shadow-md transition hover:bg-amber-50">
+<span class="material-symbols-outlined" aria-hidden="true">explore</span>
+                    Launch map planner
+                </a>
+</section>
+</div>
+
+<!-- Footer -->
+<footer class="mt-auto border-t border-amber-900/20 bg-slate-900 text-slate-200" role="contentinfo">
+<div class="landing-max py-8 sm:py-10">
+<div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+<div>
+<p class="font-headline-lg text-lg font-semibold text-amber-100">Tirupati GeoTrip Planner</p>
+<p class="mt-2 text-sm leading-relaxed text-slate-400">Independent trip-planning helper for Tirumala &amp; Tirupati. Not affiliated with TTD or any official body.</p>
+</div>
+<div>
+<p class="text-xs font-bold uppercase tracking-wider text-amber-200/80">Links</p>
+<ul class="mt-3 space-y-2 text-sm">
+<li><a href="budget_calculator.html" class="font-medium text-amber-300 hover:text-amber-100 hover:underline">Budget &amp; map planner</a></li>
+<li><a href="#categorySection" class="font-medium text-amber-300 hover:text-amber-100 hover:underline">Categories</a></li>
+<li><a href="#howItWorks" class="font-medium text-amber-300 hover:text-amber-100 hover:underline">How it works</a></li>
+</ul>
+</div>
+<div>
+<p class="text-xs font-bold uppercase tracking-wider text-amber-200/80">Note</p>
+<p class="mt-2 text-sm leading-relaxed text-slate-400">Counts load from your bundled CSV when the page is served over HTTP(S). Always confirm timings and access at the venue.</p>
+</div>
+</div>
+<div class="mt-8 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row sm:justify-between">
+<p>© <span id="footerYear">2026</span> Tirupati GeoTrip Planner.</p>
+<p class="text-slate-500">Built for clarity—keyboard, touch, and screen-reader friendly controls.</p>
+</div>
+</div>
+</footer>
+</div>
+</main>
+
+<div id="mobileNavBackdrop" class="mobile-nav-backdrop pointer-events-none fixed inset-0 z-[90] bg-slate-900/50 opacity-0 invisible backdrop-blur-sm lg:hidden" aria-hidden="true"></div>
+<aside id="mobileNavPanel" class="mobile-nav-panel fixed left-0 top-0 z-[100] flex h-[100dvh] w-[min(20rem,90vw)] -translate-x-full flex-col border-r border-amber-200/40 bg-white shadow-2xl lg:hidden" aria-hidden="true" aria-label="Menu">
+<div class="flex items-center justify-between border-b border-amber-100 px-3 py-3">
+<span class="font-headline-md font-semibold text-amber-900">Menu</span>
+<button type="button" id="mobileNavClose" class="icon-btn" aria-label="Close menu">
+<span class="material-symbols-outlined" aria-hidden="true">close</span>
+</button>
+</div>
+<nav class="drawer-nav flex-1 overflow-y-auto p-3" aria-label="Mobile">
+<a href="packages.html"><span class="material-symbols-outlined text-xl" aria-hidden="true">inventory_2</span> Trip packages</a>
+<a href="budget_calculator.html"><span class="material-symbols-outlined text-xl" aria-hidden="true">map</span> Budget &amp; map planner</a>
+<a href="budget_calculator.html"><span class="material-symbols-outlined text-xl" aria-hidden="true">payments</span> Open planner</a>
+</nav>
+<div class="border-t border-amber-100 p-3">
+<a href="budget_calculator.html" class="flex min-h-12 items-center justify-center rounded-xl bg-secondary text-center text-base font-bold text-on-secondary no-underline">Start planning</a>
+</div>
+</aside>
+
+<dialog id="plannerPreflightDialog" class="planner-preflight-dialog" aria-labelledby="plannerPreflightTitle">
+    <div class="planner-preflight-dialog__inner">
+        <div class="planner-preflight-head">
+            <div>
+                <h2 id="plannerPreflightTitle">Map filters</h2>
+                <p id="plannerPreflightSubtitle">Adjust filters, then open the map planner.</p>
+            </div>
+            <button type="button" class="planner-preflight-close" id="plannerPreflightClose" aria-label="Close">
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
+        </div>
+        <div class="planner-preflight-body">
+            <div>
+                <div class="planner-preflight-legend" id="plannerPreflightCatLegend">Category</div>
+                <div class="planner-preflight-chips" id="plannerPreflightCatChips" role="group" aria-labelledby="plannerPreflightCatLegend">
+                    <button type="button" data-pf-cat="all">All</button>
+                    <button type="button" data-pf-cat="food">Food</button>
+                    <button type="button" data-pf-cat="adventure">Adventure</button>
+                    <button type="button" data-pf-cat="wildlife">Wildlife</button>
+                    <button type="button" data-pf-cat="temple">Temple</button>
+                    <button type="button" data-pf-cat="sightseeing">Sightseeing</button>
+                </div>
+            </div>
+            <div class="planner-preflight-field">
+                <label for="plannerPreflightTripSpend">Total trip spend (₹)</label>
+                <input type="number" id="plannerPreflightTripSpend" min="0" step="100" placeholder="e.g. 15000" inputmode="decimal" autocomplete="off"/>
+                <p class="planner-preflight-hint">Optional — your planned or actual budget for the whole trip. Carries to the map planner.</p>
+            </div>
+            <div class="planner-preflight-field">
+                <label for="plannerPreflightSearch">Search places (optional)</label>
+                <input type="search" id="plannerPreflightSearch" placeholder="Name or description…" autocomplete="off"/>
+            </div>
+            <div class="planner-preflight-row2">
+                <div class="planner-preflight-field">
+                    <label for="plannerPreflightStart">Outing start</label>
+                    <input type="time" id="plannerPreflightStart" value="09:00" required/>
+                </div>
+                <div class="planner-preflight-field">
+                    <label for="plannerPreflightEnd">Outing end</label>
+                    <input type="time" id="plannerPreflightEnd" value="21:00" required/>
+                </div>
+            </div>
+            <div class="planner-preflight-row2">
+                <div class="planner-preflight-field">
+                    <label for="plannerPreflightDate">Date</label>
+                    <input type="date" id="plannerPreflightDate" required/>
+                </div>
+                <div class="planner-preflight-field">
+                    <label for="plannerPreflightDays">Days</label>
+                    <input type="number" id="plannerPreflightDays" min="1" max="365" value="1" required/>
+                </div>
+            </div>
+            <div class="planner-preflight-field">
+                <label for="plannerPreflightLoc">Start location</label>
+                <input type="text" id="plannerPreflightLoc" placeholder="e.g. Tirupati" value="Tirupati" autocomplete="street-address"/>
+            </div>
+        </div>
+        <div class="planner-preflight-foot">
+            <button type="button" id="plannerPreflightCancel">Cancel</button>
+            <button type="button" class="planner-preflight-go" id="plannerPreflightGo">Go to map</button>
+        </div>
+    </div>
+</dialog>
+
+<script>
+(function () {
+    const CSV_URL = new URL('scraped_tirupati_places.csv', document.location.href).href;
+
+    function categoryKeyFromCsv(cat) {
+        const c = (cat || '').toLowerCase();
+        if (c.includes('food')) return 'food';
+        if (c.includes('adventure')) return 'adventure';
+        if (c.includes('wildlife')) return 'wildlife';
+        if (c.includes('temple')) return 'temple';
+        if (c.includes('sight')) return 'sightseeing';
+        return 'other';
+    }
+
+    function parseLine(line) {
+        const parts = line.split(',');
+        if (parts.length < 6) return null;
+        if (!(parts[0] || '').trim() && (parts[6] || '').trim()) return null;
+        return { categoryKey: categoryKeyFromCsv(parts[1].trim()) };
+    }
+
+    function initHeroSlideshow() {
+        const stack = document.getElementById('heroPhotoStack');
+        const caption = document.getElementById('heroSlideCaption');
+        const dotsRoot = document.getElementById('heroDots');
+        const prevBtn = document.getElementById('heroPrev');
+        const nextBtn = document.getElementById('heroNext');
+        const region = document.getElementById('heroSlideshowRegion');
+        const controls = document.getElementById('heroSlideshowControls');
+        if (!stack || !dotsRoot) return;
+        const frames = Array.prototype.slice.call(stack.querySelectorAll('.hero-slideshow__frame'));
+        if (!frames.length) return;
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let i = 0;
+        let timer = null;
+        const intervalMs = 4500;
+
+        function apply() {
+            frames.forEach(function (f, j) {
+                f.classList.toggle('is-active', j === i);
+                f.setAttribute('aria-hidden', j === i ? 'false' : 'true');
+            });
+            if (caption && frames[i] && frames[i].dataset.label) {
+                caption.textContent = frames[i].dataset.label;
+            }
+            dotsRoot.querySelectorAll('.hero-slideshow__dot').forEach(function (d, j) {
+                d.setAttribute('aria-current', j === i ? 'true' : 'false');
+            });
+        }
+
+        function clearTimer() {
+            if (timer) {
+                window.clearInterval(timer);
+                timer = null;
+            }
+        }
+
+        function startTimer() {
+            clearTimer();
+            if (!reduced && frames.length > 1) {
+                timer = window.setInterval(function () {
+                    i = (i + 1) % frames.length;
+                    apply();
+                }, intervalMs);
+            }
+        }
+
+        function goTo(index) {
+            i = (index + frames.length) % frames.length;
+            apply();
+            startTimer();
+        }
+
+        function step(delta) {
+            goTo(i + delta);
+        }
+
+        frames.forEach(function (f, j) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'hero-slideshow__dot';
+            b.setAttribute('aria-label', 'Show: ' + (f.dataset.label || String(j + 1)));
+            b.addEventListener('click', function () {
+                goTo(j);
+            });
+            dotsRoot.appendChild(b);
+        });
+
+        if (prevBtn) prevBtn.addEventListener('click', function () { step(-1); });
+        if (nextBtn) nextBtn.addEventListener('click', function () { step(1); });
+
+        if (region && !reduced) {
+            region.addEventListener('mouseenter', clearTimer);
+            region.addEventListener('mouseleave', startTimer);
+            region.addEventListener('focusin', clearTimer);
+            region.addEventListener('focusout', function (ev) {
+                if (!region.contains(ev.relatedTarget)) startTimer();
+            });
+        }
+
+        if (controls && frames.length < 2) {
+            controls.classList.add('hidden');
+        }
+
+        apply();
+        startTimer();
+    }
+
+    function initCategoryFilter() {
+        const input = document.getElementById('navSearch');
+        const grid = document.getElementById('categoryGrid');
+        const status = document.getElementById('categoryFilterStatus');
+        const empty = document.getElementById('categoryEmpty');
+        const chips = document.querySelectorAll('#filterChips [data-set-filter]');
+        if (!input || !grid) return;
+        const cards = grid.querySelectorAll('[data-category-card]');
+
+        function syncChipsActive() {
+            const v = (input.value || '').trim().toLowerCase();
+            chips.forEach(function (chip) {
+                const f = (chip.getAttribute('data-set-filter') || '').toLowerCase();
+                const isAll = f === '' && v === '';
+                const match = f !== '' && v === f;
+                chip.classList.toggle('is-active', isAll || match);
+            });
+        }
+
+        function run() {
+            const raw = input.value.trim();
+            const q = raw.toLowerCase().replace(/\s+/g, ' ');
+            let visible = 0;
+            cards.forEach(function (a) {
+                const hay = (a.getAttribute('data-search-text') || '').toLowerCase();
+                const text = (a.textContent || '').toLowerCase();
+                const ok = !q || hay.indexOf(q) !== -1 || text.indexOf(q) !== -1;
+                a.classList.toggle('category-card-hidden', !ok);
+                if (ok) visible += 1;
+            });
+            if (empty) empty.classList.toggle('hidden', visible !== 0);
+            if (status) {
+                if (!q) {
+                    status.textContent = 'Showing all themes.';
+                } else if (visible) {
+                    status.textContent = 'Showing ' + visible + ' themes matching your filter.';
+                } else {
+                    status.textContent = 'No themes match your filter.';
+                }
+            }
+            syncChipsActive();
+        }
+
+        input.addEventListener('input', run);
+        input.addEventListener('search', run);
+
+        chips.forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                input.value = chip.getAttribute('data-set-filter') || '';
+                run();
+            });
+        });
+
+        run();
+    }
+
+    function initPlannerPreflight() {
+        const TRIP_SPEND_STORAGE = 'tirupati_trip_total_spend';
+        const dlg = document.getElementById('plannerPreflightDialog');
+        const subtitle = document.getElementById('plannerPreflightSubtitle');
+        const catRoot = document.getElementById('plannerPreflightCatChips');
+        const grid = document.getElementById('categoryGrid');
+        const searchEl = document.getElementById('plannerPreflightSearch');
+        const startEl = document.getElementById('plannerPreflightStart');
+        const endEl = document.getElementById('plannerPreflightEnd');
+        const dateEl = document.getElementById('plannerPreflightDate');
+        const daysEl = document.getElementById('plannerPreflightDays');
+        const locEl = document.getElementById('plannerPreflightLoc');
+        const spendEl = document.getElementById('plannerPreflightTripSpend');
+        const closeBtn = document.getElementById('plannerPreflightClose');
+        const cancelBtn = document.getElementById('plannerPreflightCancel');
+        const goBtn = document.getElementById('plannerPreflightGo');
+        if (!dlg || !catRoot || !grid || !searchEl || !startEl || !endEl || !dateEl || !daysEl || !locEl || !goBtn) return;
+
+        if (spendEl) {
+            spendEl.addEventListener('input', function () {
+                const v = spendEl.value.trim();
+                if (v) {
+                    try {
+                        window.localStorage.setItem(TRIP_SPEND_STORAGE, v);
+                    } catch (err) { /* ignore */ }
+                } else {
+                    try {
+                        window.localStorage.removeItem(TRIP_SPEND_STORAGE);
+                    } catch (err2) { /* ignore */ }
+                }
+            });
+        }
+
+        const PLANNER = 'budget_calculator.html';
+        let selectedCat = 'all';
+
+        function syncCatChipUi() {
+            catRoot.querySelectorAll('[data-pf-cat]').forEach(function (btn) {
+                btn.classList.toggle('is-active', (btn.getAttribute('data-pf-cat') || '') === selectedCat);
+            });
+        }
+
+        function openFromCard(card) {
+            const raw = (card.getAttribute('data-category-card') || 'all').toLowerCase();
+            const label = (card.getAttribute('data-theme-label') || raw).trim() || raw;
+            const allowed = { food: 1, adventure: 1, wildlife: 1, temple: 1, sightseeing: 1, all: 1 };
+            selectedCat = allowed[raw] ? raw : 'all';
+            if (subtitle) {
+                subtitle.textContent =
+                    'Theme: ' + label + ' — adjust map filters below, then open the planner with them applied.';
+            }
+            searchEl.value = '';
+            dateEl.value = new Date().toISOString().split('T')[0];
+            daysEl.value = '1';
+            startEl.value = '09:00';
+            endEl.value = '21:00';
+            locEl.value = 'Tirupati';
+            if (spendEl) {
+                var savedSpend = '';
+                try {
+                    savedSpend = window.localStorage.getItem(TRIP_SPEND_STORAGE) || '';
+                } catch (e) { /* ignore */ }
+                spendEl.value = savedSpend;
+            }
+            syncCatChipUi();
+            dlg.showModal();
+            window.requestAnimationFrame(function () {
+                goBtn.focus();
+            });
+        }
+
+        grid.addEventListener('click', function (ev) {
+            const card = ev.target.closest('[data-category-card]');
+            if (!card) return;
+            openFromCard(card);
+        });
+
+        catRoot.addEventListener('click', function (ev) {
+            const btn = ev.target.closest('[data-pf-cat]');
+            if (!btn) return;
+            selectedCat = btn.getAttribute('data-pf-cat') || 'all';
+            syncCatChipUi();
+        });
+
+        function closeDlg() {
+            if (dlg.open) dlg.close();
+        }
+
+        if (closeBtn) closeBtn.addEventListener('click', closeDlg);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeDlg);
+
+        goBtn.addEventListener('click', function () {
+            const p = new URLSearchParams();
+            if (selectedCat && selectedCat !== 'all') {
+                p.set('category', selectedCat);
+            }
+            const q = searchEl.value.trim();
+            if (q) p.set('q', q);
+            if (startEl.value) p.set('start', startEl.value);
+            if (endEl.value) p.set('end', endEl.value);
+            if (dateEl.value) p.set('date', dateEl.value);
+            const nd = parseInt(daysEl.value, 10);
+            if (!isNaN(nd) && nd >= 1) p.set('days', String(nd));
+            const loc = locEl.value.trim();
+            if (loc) p.set('loc', loc);
+            if (spendEl) {
+                var spendRaw = spendEl.value.trim();
+                if (spendRaw !== '') {
+                    var sn = parseFloat(spendRaw);
+                    if (isFinite(sn) && sn >= 0) {
+                        p.set('spend', String(Math.round(sn)));
+                    }
+                }
+            }
+            p.set('apply', '1');
+            window.location.href = PLANNER + '?' + p.toString();
+        });
+    }
+
+    function initMobileNav() {
+        const openBtn = document.getElementById('mobileNavOpen');
+        const panel = document.getElementById('mobileNavPanel');
+        const backdrop = document.getElementById('mobileNavBackdrop');
+        const closeBtn = document.getElementById('mobileNavClose');
+        if (!openBtn || !panel || !backdrop) return;
+
+        function setOpen(open) {
+            panel.classList.toggle('is-open', open);
+            backdrop.classList.toggle('is-open', open);
+            panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+            backdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+            openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (open) {
+                document.documentElement.classList.add('overflow-hidden');
+                if (closeBtn) {
+                    window.requestAnimationFrame(function () {
+                        closeBtn.focus();
+                    });
+                }
+            } else {
+                document.documentElement.classList.remove('overflow-hidden');
+            }
+        }
+
+        openBtn.addEventListener('click', function () {
+            setOpen(true);
+        });
+        backdrop.addEventListener('click', function () {
+            setOpen(false);
+        });
+        if (closeBtn) closeBtn.addEventListener('click', function () { setOpen(false); });
+
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Escape' && panel.classList.contains('is-open')) {
+                setOpen(false);
+                openBtn.focus();
+            }
+        });
+
+        panel.querySelectorAll('a[href]').forEach(function (link) {
+            link.addEventListener('click', function () {
+                setOpen(false);
+            });
+        });
+    }
+
+    function initFooterYear() {
+        const y = document.getElementById('footerYear');
+        if (y) y.textContent = String(new Date().getFullYear());
+    }
+
+    async function loadCounts() {
+        const set = function (id, n) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = n;
+        };
+        try {
+            const res = await fetch(CSV_URL);
+            const text = await res.text();
+            const lines = text.trim().split(/\r?\n/);
+            let food = 0, adventure = 0, wildlife = 0, temple = 0, sightseeing = 0;
+            for (let i = 1; i < lines.length; i++) {
+                const raw = lines[i];
+                if (/^name of the place/i.test(raw) || /^name,/i.test(raw)) continue;
+                const row = parseLine(raw);
+                if (!row) continue;
+                if (row.categoryKey === 'food') food++;
+                else if (row.categoryKey === 'adventure') adventure++;
+                else if (row.categoryKey === 'wildlife') wildlife++;
+                else if (row.categoryKey === 'temple') temple++;
+                else if (row.categoryKey === 'sightseeing') sightseeing++;
+            }
+            set('countFood', food);
+            set('countAdventure', adventure);
+            set('countWildlife', wildlife);
+            set('countTemple', temple);
+            set('countSightseeing', sightseeing);
+            set('countFoodCard', food);
+            set('countAdventureCard', adventure);
+            set('countWildlifeCard', wildlife);
+            set('countTempleCard', temple);
+            set('countSightseeingCard', sightseeing);
+        } catch (e) {
+            console.warn('CSV load failed', e);
+            set('countFood', '—');
+            set('countAdventure', '—');
+            set('countWildlife', '—');
+            set('countTemple', '—');
+            set('countSightseeing', '—');
+            set('countFoodCard', '—');
+            set('countAdventureCard', '—');
+            set('countWildlifeCard', '—');
+            set('countTempleCard', '—');
+            set('countSightseeingCard', '—');
+        }
+    }
+
+    initFooterYear();
+    initHeroSlideshow();
+    initCategoryFilter();
+    initPlannerPreflight();
+    initMobileNav();
+    loadCounts();
+})();
+</script>
+</body>
+</html>

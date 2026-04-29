@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tirupati trip packages · GeoTrip Planner</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@600;700&amp;family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <style>
+        body { font-family: "Public Sans", system-ui, sans-serif; }
+        h1, h2 { font-family: "Noto Serif", Georgia, serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+
+        .pricing-grid {
+            display: grid;
+            gap: 1.75rem;
+            grid-template-columns: 1fr;
+        }
+        @media (min-width: 900px) {
+            .pricing-grid { grid-template-columns: repeat(3, 1fr); align-items: stretch; }
+        }
+
+        .pricing-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border-radius: 1.5rem;
+            background: #fff;
+            box-shadow: 0 14px 40px rgba(15, 23, 42, 0.1);
+            overflow: hidden;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .pricing-card:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(15, 23, 42, 0.12); }
+        .pricing-card.is-selected {
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.12), 0 20px 48px rgba(15, 23, 42, 0.14);
+        }
+
+        .pricing-card__top-wrap { border-radius: 1.5rem 1.5rem 0 0; overflow: hidden; }
+        .pricing-card--basic .pricing-card__top-wrap {
+            background: linear-gradient(145deg, #2dd4bf 0%, #0d9488 55%, #0f766e 100%);
+        }
+        .pricing-card--standard .pricing-card__top-wrap {
+            background: linear-gradient(145deg, #fb923c 0%, #ea580c 50%, #c2410c 100%);
+        }
+        .pricing-card--premium .pricing-card__top-wrap {
+            background: linear-gradient(145deg, #fb7185 0%, #f43f5e 48%, #e11d48 100%);
+        }
+
+        /* Header: title + tagline centered; badge in normal flow below — no overlap */
+        .pricing-card__header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1.25rem 0.75rem;
+            color: #fff;
+            text-align: center;
+            background: transparent;
+        }
+        .pricing-card__header h3 {
+            margin: 0;
+            font-family: "Public Sans", system-ui, sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            max-width: 100%;
+            padding: 0 0.25rem;
+        }
+        .pricing-card__header p {
+            margin: 0.5rem 0 0;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            opacity: 0.92;
+            line-height: 1.45;
+            max-width: 17rem;
+        }
+        .pricing-card__badge {
+            position: relative;
+            margin-top: 1rem;
+            margin-bottom: 0.25rem;
+            width: 6.5rem;
+            height: 6.5rem;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex-shrink: 0;
+            padding: 0.4rem;
+        }
+        .pricing-card__badge strong {
+            font-size: clamp(0.7rem, 2.2vw, 0.88rem);
+            font-weight: 800;
+            line-height: 1.2;
+            padding: 0 0.2rem;
+        }
+        .pricing-card__badge span {
+            font-size: 0.62rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.82;
+            margin-top: 0.2rem;
+        }
+
+        .pricing-card__wave {
+            display: block;
+            width: 100%;
+            height: 2.25rem;
+            margin-top: -1px;
+            flex-shrink: 0;
+        }
+        .pricing-card__wave svg { display: block; width: 100%; height: 100%; }
+
+        .pricing-card__body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0.35rem 1.35rem 1.5rem;
+            margin-top: -0.5rem;
+        }
+        .pricing-card__pick-hint {
+            text-align: center;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: #475569;
+            margin: 0 0 0.85rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.75rem;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+        }
+        .pricing-card__features {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            flex: 1;
+        }
+        .pricing-card__features li {
+            position: relative;
+            padding-left: 1.35rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.875rem;
+            color: #334155;
+            line-height: 1.45;
+        }
+        .pricing-card__features li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.45rem;
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 50%;
+            background: var(--dot);
+        }
+        .pricing-card__cta {
+            margin-top: 1.15rem;
+            width: 100%;
+            border: none;
+            border-radius: 999px;
+            padding: 0.9rem 1rem;
+            font-size: 0.8125rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #fff;
+            cursor: pointer;
+            transition: filter 0.15s ease, transform 0.1s ease;
+        }
+        .pricing-card__cta:hover { filter: brightness(1.06); }
+        .pricing-card__cta:active { transform: scale(0.98); }
+
+        .pricing-card--basic { --dot: #0d9488; }
+        .pricing-card--basic .pricing-card__badge strong { color: #0f766e; }
+        .pricing-card--basic .pricing-card__cta { background: linear-gradient(145deg, #14b8a6, #0d9488); }
+
+        .pricing-card--standard { --dot: #ea580c; }
+        .pricing-card--standard .pricing-card__badge strong { color: #c2410c; }
+        .pricing-card--standard .pricing-card__cta { background: linear-gradient(145deg, #fb923c, #ea580c); }
+
+        .pricing-card--premium { --dot: #f43f5e; }
+        .pricing-card--premium .pricing-card__badge strong { color: #e11d48; }
+        .pricing-card--premium .pricing-card__cta { background: linear-gradient(145deg, #fb7185, #f43f5e); }
+
+        /* Selection summary strip */
+        .selection-strip {
+            border-radius: 1.25rem;
+            border: 1px solid #e2e8f0;
+            background: linear-gradient(165deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+        }
+        .selection-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+        }
+        .selection-chip .num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.35rem;
+            height: 1.35rem;
+            border-radius: 999px;
+            background: #0f766e;
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 800;
+        }
+
+        /* Place picker dialog */
+        #placePickerDialog {
+            width: min(52rem, calc(100vw - 2rem));
+            max-height: min(90vh, 46rem);
+            border: none;
+            border-radius: 1.25rem;
+            padding: 0;
+            box-shadow: 0 25px 80px rgba(15, 23, 42, 0.25);
+        }
+        #placePickerDialog::backdrop {
+            background: rgba(15, 23, 42, 0.52);
+            backdrop-filter: blur(6px);
+        }
+        .picker-shell {
+            display: flex;
+            flex-direction: column;
+            max-height: min(90vh, 46rem);
+        }
+        .picker-head {
+            padding: 1.25rem 1.35rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+        }
+        .picker-head h2 {
+            font-family: "Noto Serif", Georgia, serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+        .picker-progress {
+            margin-top: 0.65rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .picker-progress-bar {
+            flex: 1;
+            min-width: 8rem;
+            height: 0.45rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+        }
+        .picker-progress-bar > span {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #34d399, #2dd4bf);
+            transition: width 0.25s ease;
+        }
+        .picker-count {
+            font-size: 0.875rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #a5f3fc;
+        }
+        .picker-toolbar {
+            padding: 0.85rem 1.35rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+        @media (min-width: 640px) {
+            .picker-toolbar { flex-direction: row; flex-wrap: wrap; align-items: center; }
+        }
+        .picker-search {
+            flex: 1;
+            min-width: 12rem;
+            border-radius: 0.75rem;
+            border: 1px solid #cbd5e1;
+            padding: 0.55rem 0.85rem;
+            font-size: 0.9375rem;
+        }
+        .picker-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .picker-chip {
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #475569;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.4rem 0.7rem;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .picker-chip:hover { border-color: #94a3b8; }
+        .picker-chip.is-active {
+            background: #0f172a;
+            border-color: #0f172a;
+            color: #f8fafc;
+        }
+        .picker-list-wrap {
+            flex: 1;
+            overflow: auto;
+            min-height: 12rem;
+            max-height: 22rem;
+            padding: 0.5rem 0.35rem 0.75rem;
+        }
+        .picker-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.65rem 1rem;
+            align-items: start;
+            padding: 0.75rem 1rem;
+            margin: 0 0.35rem 0.35rem;
+            border-radius: 0.85rem;
+            border: 1px solid transparent;
+            transition: background 0.12s, border-color 0.12s;
+        }
+        .picker-row:hover { background: #f8fafc; border-color: #e2e8f0; }
+        .picker-row.is-checked {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+        }
+        .picker-row.is-hidden { display: none; }
+        .picker-row input[type="checkbox"] {
+            width: 1.15rem;
+            height: 1.15rem;
+            margin-top: 0.2rem;
+            accent-color: #0f766e;
+            cursor: pointer;
+        }
+        .picker-row-main { min-width: 0; }
+        .picker-row-title {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 0.9375rem;
+        }
+        .picker-row-meta {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.2rem;
+        }
+        .picker-cat {
+            display: inline-block;
+            margin-top: 0.35rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.2rem 0.45rem;
+            border-radius: 0.35rem;
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .picker-foot {
+            padding: 1rem 1.35rem;
+            border-top: 1px solid #e2e8f0;
+            background: #fff;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .picker-toast {
+            font-size: 0.8125rem;
+            color: #b45309;
+            font-weight: 600;
+            margin-right: auto;
+            min-height: 1.25rem;
+        }
+        .btn-ghost {
+            border-radius: 0.75rem;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.875rem;
+            padding: 0.55rem 1rem;
+            cursor: pointer;
+        }
+        .btn-ghost:hover { background: #f8fafc; }
+        .btn-primary-dark {
+            border-radius: 0.75rem;
+            border: none;
+            background: linear-gradient(135deg, #0f766e, #0d9488);
+            color: #fff;
+            font-weight: 800;
+            font-size: 0.875rem;
+            padding: 0.65rem 1.35rem;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(15, 118, 110, 0.35);
+        }
+        .btn-primary-dark:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .btn-primary-dark:not(:disabled):hover { filter: brightness(1.05); }
+
+        /* Tall map — Leaflet uses #pkgTripMap as the .leaflet-container root */
+        #pkgTripMap {
+            width: 100%;
+            min-height: 28rem;
+            height: clamp(28rem, calc(100vh - 13rem), 52rem);
+            z-index: 0;
+            font-family: "Public Sans", system-ui, sans-serif;
+            border-radius: 1rem;
+        }
+        @media (min-width: 1024px) {
+            #pkgTripMap {
+                min-height: 30rem;
+                height: clamp(30rem, calc(100vh - 12rem), 58rem);
+            }
+        }
+
+        /* Page hero + route start — premium palette (teal · amber · slate) */
+        .packages-page-bg {
+            min-height: 100vh;
+            background:
+                radial-gradient(1200px 500px at 10% -10%, rgba(45, 212, 191, 0.18), transparent 55%),
+                radial-gradient(900px 400px at 95% 0%, rgba(251, 191, 36, 0.14), transparent 50%),
+                linear-gradient(180deg, #f1f5f9 0%, #f8fafc 40%, #eef2f7 100%);
+        }
+        /* Full-viewport shell: header + main fill width (no narrow centered column) */
+        .packages-page-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .packages-header-inner,
+        .packages-main {
+            width: 100%;
+            max-width: none;
+            margin-left: 0;
+            margin-right: 0;
+            padding-left: clamp(1rem, 3.5vw, 2.75rem);
+            padding-right: clamp(1rem, 3.5vw, 2.75rem);
+            box-sizing: border-box;
+        }
+        .packages-main {
+            flex: 1 0 auto;
+            display: flex;
+            flex-direction: column;
+            padding-top: clamp(1.25rem, 2.5vw, 2rem);
+            padding-bottom: clamp(2rem, 4vw, 3rem);
+        }
+        .packages-hero {
+            border-radius: 1.5rem;
+            padding: 1.65rem 1.5rem 2rem;
+            background: linear-gradient(125deg, rgba(236, 253, 245, 0.95) 0%, #ffffff 42%, rgba(255, 251, 235, 0.92) 100%);
+            border: 1px solid rgba(13, 148, 136, 0.22);
+            box-shadow:
+                0 1px 2px rgba(15, 23, 42, 0.04),
+                0 18px 50px -12px rgba(15, 118, 110, 0.12);
+        }
+        .packages-hero__eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.6875rem;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #0f766e;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(20, 184, 166, 0.35);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+        .packages-hero__title {
+            margin: 1rem 0 0;
+            font-family: "Noto Serif", Georgia, serif;
+            font-size: clamp(1.85rem, 4.2vw, 2.85rem);
+            font-weight: 700;
+            letter-spacing: -0.035em;
+            line-height: 1.12;
+            color: #0f172a;
+        }
+        .packages-hero__lead {
+            margin: 0.9rem 0 0;
+            max-width: 40rem;
+            font-size: 1.0625rem;
+            line-height: 1.65;
+            color: #475569;
+        }
+
+        .route-start-card {
+            position: relative;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            background: #fff;
+            box-shadow:
+                0 0 0 1px rgba(148, 163, 184, 0.18),
+                0 16px 48px -8px rgba(15, 23, 42, 0.1);
+        }
+        .route-start-card__accent {
+            height: 5px;
+            background: linear-gradient(90deg, #14b8a6 0%, #0d9488 35%, #f59e0b 70%, #38bdf8 100%);
+        }
+        .route-start-card__inner {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1.25rem 1.5rem;
+            padding: 1.45rem 1.35rem 1.65rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 55%, #f1f5f9 100%);
+        }
+        @media (max-width: 640px) {
+            .route-start-card__inner {
+                grid-template-columns: 1fr;
+                justify-items: start;
+            }
+        }
+        .route-start-card__icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #2dd4bf 0%, #0d9488 55%, #0f766e 100%);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(13, 148, 136, 0.38);
+        }
+        .route-start-card__icon .material-symbols-outlined {
+            font-size: 1.85rem;
+        }
+        .route-start-card__body h2 {
+            margin: 0;
+            font-family: "Noto Serif", Georgia, serif;
+            font-size: 1.375rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+        }
+        .route-start-card__sub {
+            margin: 0.4rem 0 0;
+            font-size: 0.9rem;
+            color: #64748b;
+            line-height: 1.55;
+            max-width: 36rem;
+        }
+        .route-start-card__fields {
+            margin-top: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .route-start-card__fields {
+                flex-direction: row;
+                align-items: flex-end;
+                gap: 1.25rem;
+            }
+        }
+        .route-field {
+            flex: 1;
+            min-width: 0;
+            width: 100%;
+        }
+        .route-field label {
+            display: block;
+            font-size: 0.6875rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #0f766e;
+            margin-bottom: 0.45rem;
+        }
+        .route-field input[type="text"] {
+            width: 100%;
+            border-radius: 0.9rem;
+            border: 2px solid #e2e8f0;
+            background: #fff;
+            padding: 0.78rem 1rem;
+            font-size: 1rem;
+            color: #0f172a;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .route-field input[type="text"]::placeholder {
+            color: #94a3b8;
+        }
+        .route-field input[type="text"]:hover {
+            border-color: #cbd5e1;
+        }
+        .route-field input[type="text"]:focus {
+            outline: none;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.22);
+        }
+        .route-gps-tile {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.85rem 1.2rem;
+            border-radius: 0.9rem;
+            cursor: pointer;
+            user-select: none;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid #6ee7b7;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+        }
+        .route-gps-tile:hover {
+            border-color: #34d399;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.18);
+        }
+        .route-gps-tile:has(input:focus-visible) {
+            outline: 2px solid #0f766e;
+            outline-offset: 2px;
+        }
+        .route-gps-tile input[type="checkbox"] {
+            width: 1.15rem;
+            height: 1.15rem;
+            accent-color: #0f766e;
+            cursor: pointer;
+        }
+        .route-gps-tile .route-gps-text {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #065f46;
+            line-height: 1.3;
+        }
+        .route-gps-tile .route-gps-hint {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #047857;
+            opacity: 0.9;
+            margin-top: 0.15rem;
+        }
+
+        /* Emergency hospitals FAB + panel */
+        .emergency-fab {
+            position: fixed;
+            right: 1rem;
+            bottom: 1rem;
+            z-index: 10001;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.65rem 1rem;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 0.8125rem;
+            color: #fff;
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            box-shadow: 0 6px 22px rgba(153, 27, 27, 0.45);
+            font-family: inherit;
+        }
+        .emergency-fab:hover {
+            filter: brightness(1.06);
+        }
+        .emergency-fab .material-symbols-outlined {
+            font-size: 1.35rem;
+        }
+        .emergency-panel-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(15, 23, 42, 0.42);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .emergency-panel-backdrop.is-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .emergency-panel {
+            position: fixed;
+            top: 0.75rem;
+            right: 0;
+            width: min(100vw - 1rem, 22rem);
+            max-height: min(88vh, 34rem);
+            z-index: 9999;
+            background: #fff;
+            border-radius: 1rem 0 0 1rem;
+            box-shadow: -10px 0 36px rgba(0, 0, 0, 0.18);
+            transform: translateX(105%);
+            transition: transform 0.22s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .emergency-panel.is-open {
+            transform: translateX(0);
+        }
+        .emergency-panel__head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 1rem 1rem 0.5rem;
+            background: linear-gradient(180deg, #fef2f2 0%, #fff 100%);
+            border-bottom: 1px solid #fecaca;
+        }
+        .emergency-panel__head h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #991b1b;
+        }
+        .emergency-panel__close {
+            border: none;
+            background: #fff;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+            color: #64748b;
+        }
+        .emergency-panel__lead {
+            margin: 0;
+            padding: 0.65rem 1rem;
+            font-size: 0.8125rem;
+            color: #475569;
+            line-height: 1.45;
+        }
+        .emergency-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 0.75rem 0.75rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        .emergency-list ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .emergency-list li {
+            padding: 0.5rem 0.65rem;
+            border-radius: 0.65rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 0.4rem;
+            font-size: 0.8125rem;
+            color: #0f172a;
+        }
+        .emergency-list li span.meta {
+            display: block;
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 0.2rem;
+        }
+        .emergency-panel__foot {
+            padding: 0.75rem 1rem 1rem;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .emergency-panel__foot .btn-emergency-map {
+            width: 100%;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.65rem 1rem;
+            font-weight: 800;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            color: #fff;
+            background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+        }
+        .emergency-panel__foot .btn-emergency-map:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        .emergency-hint {
+            margin: 0.5rem 0 0;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Rich map popup card style (base trip map) */
+        .leaflet-popup.pkg-map-popup .leaflet-popup-content-wrapper {
+            border-radius: 16px;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid #dbe5f1;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.2);
+            background: #ffffff;
+        }
+        .leaflet-popup.pkg-map-popup .leaflet-popup-content {
+            margin: 0;
+            min-width: 248px;
+        }
+        .leaflet-popup.pkg-map-popup .leaflet-popup-tip {
+            background: #ffffff;
+            border: 1px solid #dbe5f1;
+        }
+        .pkg-popup-card {
+            font-family: "Public Sans", system-ui, sans-serif;
+            color: #0f172a;
+        }
+        .pkg-popup-topbar {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.6rem;
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+            color: #ecfeff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .pkg-popup-stop-pill {
+            border-radius: 999px;
+            padding: 0.2rem 0.55rem;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.38);
+            line-height: 1;
+        }
+        .pkg-popup-title-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+            padding: 0.72rem 0.78rem 0.5rem;
+        }
+        .pkg-popup-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.6rem;
+            border: 1px solid #bbf7d0;
+            background: #f0fdf4;
+            color: #166534;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .pkg-popup-title {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+        }
+        .pkg-popup-meta {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            border: 1px solid #f1d7b0;
+            background: #fff7ed;
+            color: #9a3412;
+            font-size: 0.73rem;
+            font-weight: 700;
+            padding: 0.26rem 0.58rem;
+            margin: 0 0.78rem 0.45rem;
+        }
+        .pkg-popup-detail {
+            border-top: 1px solid #e2e8f0;
+            margin: 0 0.78rem;
+            padding: 0.45rem 0 0.6rem;
+        }
+        .pkg-popup-detail-label {
+            margin: 0;
+            font-size: 0.63rem;
+            color: #64748b;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .pkg-popup-detail-value {
+            margin: 0.32rem 0 0;
+            border-radius: 0.5rem;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            padding: 0.38rem 0.52rem;
+            color: #1e293b;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .pkg-popup-foot {
+            margin: 0;
+            padding: 0 0.78rem 0.72rem;
+            color: #475569;
+            font-size: 0.81rem;
+            line-height: 1.4;
+        }
+        .pkg-popup-card--start .pkg-popup-topbar {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+        }
+        .pkg-popup-card--start .pkg-popup-icon {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body class="packages-page-bg packages-page-shell text-slate-900">
+    <header class="sticky top-0 z-40 w-full border-b border-slate-200/90 bg-white/90 backdrop-blur-md shadow-sm">
+        <div class="packages-header-inner flex flex-wrap items-center justify-between gap-3 py-3">
+            <a href="main_page.html" class="flex min-w-0 items-center gap-2 text-slate-800 hover:text-amber-900">
+                <span class="material-symbols-outlined text-amber-800" aria-hidden="true">arrow_back</span>
+                <span class="truncate font-semibold">Tirupati home</span>
+            </a>
+            <nav class="flex flex-wrap items-center gap-2">
+                <a href="budget_calculator.html" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">Budget &amp; map</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="packages-main">
+        <header class="packages-hero">
+            <span class="packages-hero__eyebrow">GeoTrip · Tirupati</span>
+            <h1 class="packages-hero__title">Trip packages</h1>
+            <p class="packages-hero__lead">
+                Choose a tier, pick the required number of places from the full directory, then view them on the map with a
+                driving route from your location.
+            </p>
+        </header>
+
+        <section class="route-start-card mt-8" aria-labelledby="routeStartHeading">
+            <div class="route-start-card__accent" aria-hidden="true"></div>
+            <div class="route-start-card__inner">
+                <div class="route-start-card__icon" aria-hidden="true">
+                    <span class="material-symbols-outlined">route</span>
+                </div>
+                <div class="route-start-card__body">
+                    <h2 id="routeStartHeading">Route start</h2>
+                    <p class="route-start-card__sub">We geocode your address for the first map point, or use your device GPS when enabled.</p>
+                    <div class="route-start-card__fields">
+                        <div class="route-field">
+                            <label for="userStartLocation">Start address</label>
+                            <input
+                                type="text"
+                                id="userStartLocation"
+                                autocomplete="street-address"
+                                placeholder="e.g. Tirupati Railway Station"
+                                value="Tirupati"
+                            />
+                        </div>
+                        <label class="route-gps-tile">
+                            <input type="checkbox" id="useLiveGps"/>
+                            <span>
+                                <span class="route-gps-text">Use live GPS</span>
+                                <span class="route-gps-hint">Best when you are already in Tirupati</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="pricing-grid mt-10" id="packageCards" aria-label="Package tiers"></section>
+
+        <section id="selectionStrip" class="selection-strip mt-10 hidden p-5 sm:p-6">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900" id="selectionTitle">Your itinerary</h2>
+                    <p class="mt-1 text-sm text-slate-600" id="selectionSubtitle"></p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" id="editSelectionBtn" class="btn-ghost">Edit places</button>
+                    <button type="button" id="showMapFromStripBtn" class="btn-primary-dark inline-flex items-center gap-2">
+                        <span class="material-symbols-outlined text-xl" aria-hidden="true">map</span>
+                        Update map
+                    </button>
+                </div>
+            </div>
+            <div id="selectionChips" class="mt-4 flex flex-wrap gap-2"></div>
+        </section>
+
+        <section id="mapSection" class="mt-8 hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-lg sm:p-5" aria-labelledby="mapSectionTitle">
+            <h2 id="mapSectionTitle" class="text-xl font-bold text-slate-900">Trip map</h2>
+            <p id="pkgMapStatus" class="mt-2 text-sm text-slate-600" role="status"></p>
+            <div id="pkgTripMap" class="mt-4 w-full border border-slate-200 shadow-inner" aria-label="Interactive map"></div>
+        </section>
+
+        <p id="loadError" class="mt-6 hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"></p>
+    </main>
+
+    <div id="emergencyBackdrop" class="emergency-panel-backdrop" aria-hidden="true"></div>
+    <div id="emergencyPanel" class="emergency-panel" role="dialog" aria-modal="true" aria-labelledby="emergencyTitle" hidden aria-hidden="true">
+        <div class="emergency-panel__head">
+            <h2 id="emergencyTitle">Emergency · Hospitals</h2>
+            <button type="button" class="emergency-panel__close" id="emergencyCloseBtn" aria-label="Close">×</button>
+        </div>
+        <p class="emergency-panel__lead">Hospitals listed in the Tirupati dataset. Open the map to see the <strong>three nearest</strong> to your route start with an OSRM-optimized driving path.</p>
+        <div id="emergencyListRoot" class="emergency-list"></div>
+        <div class="emergency-panel__foot">
+            <button type="button" class="btn-emergency-map" id="emergencyShowMapBtn">Show nearest 3 on map</button>
+            <p id="emergencyMapHint" class="emergency-hint" role="status"></p>
+        </div>
+    </div>
+    <button type="button" class="emergency-fab" id="emergencyFab" aria-haspopup="dialog" aria-controls="emergencyPanel" title="Emergency hospitals">
+        <span class="material-symbols-outlined" aria-hidden="true">local_hospital</span>
+        Emergency
+    </button>
+
+    <dialog id="placePickerDialog" aria-labelledby="pickerDialogTitle">
+        <div class="picker-shell">
+            <div class="picker-head">
+                <h2 id="pickerDialogTitle">Build your itinerary</h2>
+                <p id="pickerDialogSubtitle" class="mt-1 text-sm text-slate-300"></p>
+                <div class="picker-progress">
+                    <div class="picker-progress-bar" aria-hidden="true"><span id="pickerProgressFill" style="width:0%"></span></div>
+                    <span class="picker-count" id="pickerCountLabel">0 / 0</span>
+                </div>
+            </div>
+            <div class="picker-toolbar">
+                <input type="search" id="pickerSearch" class="picker-search" placeholder="Search by name or description…" autocomplete="off"/>
+                <div class="picker-chips" id="pickerCategoryChips" role="group" aria-label="Filter by category"></div>
+            </div>
+            <div class="picker-list-wrap" id="pickerListScroll">
+                <div id="pickerListRoot"></div>
+            </div>
+            <div class="picker-foot">
+                <span class="picker-toast" id="pickerToast" role="status"></span>
+                <button type="button" class="btn-ghost" id="pickerClearBtn">Clear all</button>
+                <button type="button" class="btn-ghost" id="pickerCancelBtn">Cancel</button>
+                <button type="button" class="btn-primary-dark" id="pickerApplyBtn" disabled>Apply &amp; show map</button>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+(function () {
+    var CSV_URL = new URL('scraped_tirupati_places.csv', document.location.href).href;
+    var OSRM_BASE = 'https://router.project-osrm.org/route/v1/driving';
+    var OSRM_TRIP_BASE = 'https://router.project-osrm.org/trip/v1/driving';
+
+    var places = [];
+    var hospitalStubs = [];
+    var hospitalGeocodeCache = {};
+    var lastSelectedStops = [];
+    var activeTierMeta = null;
+
+    var pkgMap = null;
+    var pkgMarkersLayer = null;
+    var pkgRouteLayer = null;
+    var pkgStartLayer = null;
+    var pkgHospitalLayer = null;
+    var routeAbort = null;
+    var emergencyAbort = null;
+    /** Fast fallback coords for emergency hospitals (used before network geocoding). */
+    var EMERGENCY_HOSPITAL_LATLNG_FALLBACK = {
+        'SVIMS Hospital': { lat: 13.642478, lng: 79.405348 },
+        'Ruia Government Hospital': { lat: 13.644965, lng: 79.405757 },
+        'Apollo Hospital Tirupati': { lat: 13.623068, lng: 79.429942 },
+        'Sri Chakra Hospital': { lat: 13.6360533, lng: 79.4210585 },
+        'Aster Narayanadri Hospital': { lat: 13.62846, lng: 79.463813 },
+        'Helios Hospital': { lat: 13.638177, lng: 79.423773 },
+        'Venkataramana Hospital': { lat: 13.6353807, lng: 79.4199327 },
+        'Suraksha Hospital': { lat: 13.635603, lng: 79.4204007 },
+        'Mother Hospital': { lat: 13.6382376, lng: 79.4184239 },
+        'Life Line Hospital': { lat: 13.6367942, lng: 79.4214374 },
+        'Balaji Hospital': { lat: 13.6366949, lng: 79.4274731 },
+        'Sree Ramadevi Hospital': { lat: 13.638003, lng: 79.4171204 },
+        'Padmavathi Hospital': { lat: 13.6398667, lng: 79.4162768 },
+        'Lotus Hospital': { lat: 13.6372, lng: 79.4215 },
+        'Sai Sudha Hospital': { lat: 13.635545, lng: 79.4215715 },
+        'Annapurna Hospital': { lat: 13.6349, lng: 79.4202 },
+        'Medicover Hospital Tirupati': { lat: 13.6355541, lng: 79.4183153 },
+        'Sankalpa Hospital': { lat: 13.6346953, lng: 79.420532 },
+        "People's Hospital": { lat: 13.6316368, lng: 79.4231711 },
+        'Cure Hospital': { lat: 13.622838, lng: 79.409767 }
+    };
+
+    var pickerTierId = null;
+    var pickerLimit = 0;
+    var pickerOrder = [];
+    var pickerFilterCat = 'all';
+    var placeByName = {};
+
+    function categoryKeyFromCsv(cat) {
+        var c = (cat || '').toLowerCase();
+        if (c.indexOf('hospital') !== -1) return 'hospital';
+        if (c.indexOf('food') !== -1) return 'food';
+        if (c.indexOf('adventure') !== -1) return 'adventure';
+        if (c.indexOf('wildlife') !== -1) return 'wildlife';
+        if (c.indexOf('temple') !== -1) return 'temple';
+        if (c.indexOf('sight') !== -1) return 'sightseeing';
+        return 'other';
+    }
+
+    function parseCSVLine(line) {
+        var parts = line.split(',');
+        if (parts.length < 6) return null;
+        var hName = (parts[6] || '').trim();
+        var hCat = (parts[7] || '').trim();
+        if (!(parts[0] || '').trim() && hName && hCat.toLowerCase().indexOf('hospital') !== -1) {
+            var hTime = (parts[8] || '24 Hours').trim();
+            return {
+                name: hName,
+                category: hCat,
+                categoryKey: 'hospital',
+                lat: NaN,
+                lng: NaN,
+                description: 'Hospital',
+                timings: hTime,
+                needsGeocode: true
+            };
+        }
+        var name = (parts[0] || '').trim();
+        var category = (parts[1] || '').trim();
+        var lat = parseFloat(parts[2]);
+        var lng = parseFloat(parts[3]);
+        if (!name || isNaN(lat) || isNaN(lng)) return null;
+        var description = (parts[4] || '').trim();
+        var timings = (parts[5] || '').trim();
+        if (parts.length > 6) {
+            var tail = parts.slice(6);
+            var tailEmpty = tail.every(function (t) {
+                return !(t || '').trim();
+            });
+            if (!tailEmpty && parts.length > 8) {
+                timings = parts.slice(5, parts.length - 3).join(',').trim();
+            }
+        }
+        return {
+            name: name,
+            category: category,
+            categoryKey: categoryKeyFromCsv(category),
+            lat: lat,
+            lng: lng,
+            description: description,
+            timings: timings
+        };
+    }
+
+    function haversineKm(lat1, lng1, lat2, lng2) {
+        var R = 6371;
+        var toR = Math.PI / 180;
+        var dLat = (lat2 - lat1) * toR;
+        var dLng = (lng2 - lng1) * toR;
+        var a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * toR) * Math.cos(lat2 * toR) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+    }
+
+    function orderStopsNearestFromStart(stops, startLat, startLng) {
+        if (!stops || !stops.length) return [];
+        var rem = stops.slice();
+        var out = [];
+        var curLat = startLat;
+        var curLng = startLng;
+        while (rem.length) {
+            var bestI = 0;
+            var bestD = Infinity;
+            for (var i = 0; i < rem.length; i++) {
+                var d = haversineKm(curLat, curLng, rem[i].lat, rem[i].lng);
+                if (d < bestD) {
+                    bestD = d;
+                    bestI = i;
+                }
+            }
+            var p = rem.splice(bestI, 1)[0];
+            out.push(p);
+            curLat = p.lat;
+            curLng = p.lng;
+        }
+        return out;
+    }
+
+    function fetchOsrmTripOrder(waypointsLatLng, signal) {
+        if (!waypointsLatLng || waypointsLatLng.length < 3) return Promise.resolve(null);
+        var path = waypointsLatLng
+            .map(function (w) {
+                return w[1] + ',' + w[0];
+            })
+            .join(';');
+        var url = OSRM_TRIP_BASE + '/' + path + '?source=first&destination=last&roundtrip=false&overview=false';
+        return fetch(url, { signal: signal })
+            .then(function (r) {
+                return r.json();
+            })
+            .then(function (j) {
+                if (!j || j.code !== 'Ok' || !Array.isArray(j.waypoints)) return null;
+                var pairs = [];
+                for (var i = 0; i < j.waypoints.length; i++) {
+                    var wi = j.waypoints[i].waypoint_index;
+                    if (typeof wi !== 'number') return null;
+                    pairs.push({ inputIdx: i, visitIdx: wi });
+                }
+                pairs.sort(function (a, b) {
+                    return a.visitIdx - b.visitIdx;
+                });
+                return pairs.map(function (x) {
+                    return x.inputIdx;
+                });
+            })
+            .catch(function () {
+                return null;
+            });
+    }
+
+    var TIERS = [
+        {
+            id: 'basic',
+            shortTitle: 'Basic',
+            title: 'Basic Package',
+            displayRange: '1k to 5k',
+            pickLimit: 5,
+            tagline: 'Compact budget band — pick five must-see stops.',
+            themeClass: 'pricing-card--basic'
+        },
+        {
+            id: 'standard',
+            shortTitle: 'Standard',
+            title: 'Standard Package',
+            displayRange: '5k to 10k',
+            pickLimit: 10,
+            tagline: 'Mid-range band — build a richer day with ten stops.',
+            themeClass: 'pricing-card--standard'
+        },
+        {
+            id: 'premium',
+            shortTitle: 'Premium',
+            title: 'Premium Package',
+            displayRange: '10k to 15k',
+            pickLimit: 15,
+            tagline: 'Premium band — fifteen stops for maximum coverage.',
+            themeClass: 'pricing-card--premium'
+        }
+    ];
+
+    function escapeHtml(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function categoryThemeLabel(categoryKey, fallbackCategory) {
+        var key = (categoryKey || '').toLowerCase();
+        if (key === 'temple') return 'Temple';
+        if (key === 'food') return 'Food';
+        if (key === 'adventure') return 'Adventure';
+        if (key === 'sightseeing') return 'Sightseeing';
+        if (key === 'wildlife') return 'Wildlife';
+        if (key === 'hospital') return 'Hospital';
+        return fallbackCategory || 'Place';
+    }
+
+    function buildStartPopupHtml(startLabel) {
+        return (
+            '<article class="pkg-popup-card pkg-popup-card--start">' +
+            '<div class="pkg-popup-topbar"><span class="pkg-popup-stop-pill">Route start</span><span>First point fixed</span></div>' +
+            '<div class="pkg-popup-title-row">' +
+            '<span class="pkg-popup-icon" aria-hidden="true">&#8962;</span>' +
+            '<div><h3 class="pkg-popup-title">Start location</h3></div>' +
+            '</div>' +
+            '<p class="pkg-popup-meta">Navigation anchor</p>' +
+            '<div class="pkg-popup-detail">' +
+            '<p class="pkg-popup-detail-label">Address</p>' +
+            '<p class="pkg-popup-detail-value">' +
+            escapeHtml(startLabel || 'Current location') +
+            '</p>' +
+            '</div>' +
+            '<p class="pkg-popup-foot">Trip order begins from this point, then follows nearest-next stops.</p>' +
+            '</article>'
+        );
+    }
+
+    function buildPlacePopupHtml(p, stopNumber) {
+        var timings = (p && p.timings ? p.timings : 'Timings unavailable');
+        var categoryLabel = categoryThemeLabel(p && p.categoryKey, p && p.category);
+        var description = (p && p.description ? p.description : 'Included in your selected package route.');
+        return (
+            '<article class="pkg-popup-card">' +
+            '<div class="pkg-popup-topbar"><span class="pkg-popup-stop-pill">Stop ' +
+            stopNumber +
+            '</span><span>Open itinerary route</span></div>' +
+            '<div class="pkg-popup-title-row">' +
+            '<span class="pkg-popup-icon" aria-hidden="true">&#9679;</span>' +
+            '<div><h3 class="pkg-popup-title">' +
+            escapeHtml(p.name) +
+            '</h3></div>' +
+            '</div>' +
+            '<p class="pkg-popup-meta">' +
+            escapeHtml(categoryLabel) +
+            '</p>' +
+            '<div class="pkg-popup-detail">' +
+            '<p class="pkg-popup-detail-label">Detailed timings</p>' +
+            '<p class="pkg-popup-detail-value">' +
+            escapeHtml(timings) +
+            '</p>' +
+            '</div>' +
+            '<p class="pkg-popup-foot">' +
+            escapeHtml(description) +
+            '</p>' +
+            '</article>'
+        );
+    }
+
+    function buildHospitalPopupHtml(h, rankNumber) {
+        var timings = (h && h.timings ? h.timings : '24 Hours');
+        return (
+            '<article class="pkg-popup-card">' +
+            '<div class="pkg-popup-topbar"><span class="pkg-popup-stop-pill">Nearest ' +
+            rankNumber +
+            '</span><span>Emergency route</span></div>' +
+            '<div class="pkg-popup-title-row">' +
+            '<span class="pkg-popup-icon" aria-hidden="true">&#10010;</span>' +
+            '<div><h3 class="pkg-popup-title">' +
+            escapeHtml(h.name) +
+            '</h3></div>' +
+            '</div>' +
+            '<p class="pkg-popup-meta">Hospital</p>' +
+            '<div class="pkg-popup-detail">' +
+            '<p class="pkg-popup-detail-label">Detailed timings</p>' +
+            '<p class="pkg-popup-detail-value">' +
+            escapeHtml(timings) +
+            '</p>' +
+            '</div>' +
+            '<p class="pkg-popup-foot">Hospital from Tirupati CSV (emergency list only).</p>' +
+            '</article>'
+        );
+    }
+
+    function waveSvg() {
+        return (
+            '<div class="pricing-card__wave" aria-hidden="true">' +
+            '<svg viewBox="0 0 400 36" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<path fill="#ffffff" d="M0,4 C70,40 140,0 210,18 280,36 340,8 400,22 L400,36 L0,36 Z"/>' +
+            '</svg></div>'
+        );
+    }
+
+    function renderPackageCards() {
+        var root = document.getElementById('packageCards');
+        if (!root) return;
+        root.innerHTML = '';
+        TIERS.forEach(function (tier) {
+            var lim = tier.pickLimit;
+            var card = document.createElement('article');
+            card.className = 'pricing-card ' + tier.themeClass;
+            card.setAttribute('data-package-id', tier.id);
+
+            card.innerHTML =
+                '<div class="pricing-card__top-wrap">' +
+                '<div class="pricing-card__header">' +
+                '<h3>' +
+                escapeHtml(tier.shortTitle) +
+                '</h3>' +
+                '<p>' +
+                escapeHtml(tier.tagline) +
+                '</p>' +
+                '<div class="pricing-card__badge" aria-hidden="true">' +
+                '<strong>' +
+                escapeHtml(tier.displayRange) +
+                '</strong>' +
+                '<span>Budget band</span>' +
+                '</div>' +
+                '</div>' +
+                waveSvg() +
+                '</div>' +
+                '<div class="pricing-card__body">' +
+                '<p class="pricing-card__pick-hint">Select exactly <strong>' +
+                lim +
+                '</strong> places from the full list</p>' +
+                '<ul class="pricing-card__features">' +
+                '<li>Every row from the Tirupati places dataset</li>' +
+                '<li>Search &amp; filter while you choose</li>' +
+                '<li>Map + OSRM route on this page</li>' +
+                '<li>GPS or typed start location</li>' +
+                '</ul>' +
+                '<button type="button" class="pricing-card__cta" data-cta-package="' +
+                escapeHtml(tier.id) +
+                '">Choose places</button>' +
+                '</div>';
+
+            var cta = card.querySelector('.pricing-card__cta');
+            if (cta) {
+                cta.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    openPlacePicker(tier.id);
+                });
+            }
+            root.appendChild(card);
+        });
+    }
+
+    function getTierById(id) {
+        for (var i = 0; i < TIERS.length; i++) {
+            if (TIERS[i].id === id) return TIERS[i];
+        }
+        return null;
+    }
+
+    function setPickerToast(msg) {
+        var t = document.getElementById('pickerToast');
+        if (t) t.textContent = msg || '';
+    }
+
+    function updatePickerProgressUi() {
+        var n = pickerOrder.length;
+        var pct = pickerLimit ? Math.round((n / pickerLimit) * 100) : 0;
+        var fill = document.getElementById('pickerProgressFill');
+        var lab = document.getElementById('pickerCountLabel');
+        var applyBtn = document.getElementById('pickerApplyBtn');
+        if (fill) fill.style.width = pct + '%';
+        if (lab) lab.textContent = n + ' / ' + pickerLimit;
+        if (applyBtn) applyBtn.disabled = n !== pickerLimit;
+    }
+
+    function isPlaceSelected(name) {
+        return pickerOrder.indexOf(name) !== -1;
+    }
+
+    function togglePlace(name) {
+        var idx = pickerOrder.indexOf(name);
+        if (idx !== -1) {
+            pickerOrder.splice(idx, 1);
+            setPickerToast('');
+        } else {
+            if (pickerOrder.length >= pickerLimit) {
+                setPickerToast('Maximum ' + pickerLimit + ' places for this package.');
+                return false;
+            }
+            pickerOrder.push(name);
+            setPickerToast('');
+        }
+        syncPickerRows();
+        updatePickerProgressUi();
+        return true;
+    }
+
+    function syncPickerRows() {
+        document.querySelectorAll('.picker-row').forEach(function (row) {
+            var name = row.getAttribute('data-place-name');
+            var cb = row.querySelector('input[type="checkbox"]');
+            var on = isPlaceSelected(name);
+            row.classList.toggle('is-checked', on);
+            if (cb) cb.checked = on;
+        });
+    }
+
+    function placeMatchesFilters(p) {
+        if (pickerFilterCat !== 'all' && p.categoryKey !== pickerFilterCat) return false;
+        var q = (document.getElementById('pickerSearch') && document.getElementById('pickerSearch').value.trim().toLowerCase()) || '';
+        if (!q) return true;
+        return (
+            (p.name && p.name.toLowerCase().indexOf(q) !== -1) ||
+            (p.description && p.description.toLowerCase().indexOf(q) !== -1) ||
+            (p.category && p.category.toLowerCase().indexOf(q) !== -1)
+        );
+    }
+
+    function renderPickerList() {
+        var root = document.getElementById('pickerListRoot');
+        if (!root) return;
+        root.innerHTML = '';
+        places.forEach(function (p) {
+            var row = document.createElement('label');
+            row.className = 'picker-row';
+            row.setAttribute('data-place-name', p.name);
+            if (!placeMatchesFilters(p)) row.classList.add('is-hidden');
+            var on = isPlaceSelected(p.name);
+            if (on) row.classList.add('is-checked');
+            row.innerHTML =
+                '<input type="checkbox"' +
+                (on ? ' checked' : '') +
+                ' aria-label="Select ' +
+                escapeHtml(p.name) +
+                '"/>' +
+                '<div class="picker-row-main">' +
+                '<div class="picker-row-title">' +
+                escapeHtml(p.name) +
+                '</div>' +
+                '<div class="picker-row-meta">' +
+                escapeHtml(p.description) +
+                '</div>' +
+                '<span class="picker-cat">' +
+                escapeHtml(p.category) +
+                '</span>' +
+                '</div>';
+            var cb = row.querySelector('input');
+            cb.addEventListener('change', function () {
+                var want = cb.checked;
+                var currently = isPlaceSelected(p.name);
+                if (want && !currently) {
+                    if (!togglePlace(p.name)) cb.checked = false;
+                } else if (!want && currently) {
+                    togglePlace(p.name);
+                } else {
+                    syncPickerRows();
+                }
+            });
+            root.appendChild(row);
+        });
+    }
+
+    function renderCategoryChips() {
+        var host = document.getElementById('pickerCategoryChips');
+        if (!host) return;
+        host.innerHTML = '';
+        var cats = [
+            { id: 'all', label: 'All' },
+            { id: 'temple', label: 'Temple' },
+            { id: 'food', label: 'Food' },
+            { id: 'sightseeing', label: 'Sightseeing' },
+            { id: 'adventure', label: 'Adventure' },
+            { id: 'wildlife', label: 'Wildlife' },
+            { id: 'other', label: 'Other' }
+        ];
+        cats.forEach(function (c) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'picker-chip' + (pickerFilterCat === c.id ? ' is-active' : '');
+            b.setAttribute('data-cat', c.id);
+            b.textContent = c.label;
+            b.addEventListener('click', function () {
+                pickerFilterCat = c.id;
+                host.querySelectorAll('.picker-chip').forEach(function (x) {
+                    x.classList.toggle('is-active', x.getAttribute('data-cat') === c.id);
+                });
+                document.querySelectorAll('.picker-row').forEach(function (row) {
+                    var name = row.getAttribute('data-place-name');
+                    var p = placeByName[name];
+                    row.classList.toggle('is-hidden', p && !placeMatchesFilters(p));
+                });
+            });
+            host.appendChild(b);
+        });
+    }
+
+    function openPlacePicker(tierId) {
+        var tier = getTierById(tierId);
+        if (!tier || !places.length) return;
+        pickerTierId = tierId;
+        pickerLimit = tier.pickLimit;
+        pickerOrder = [];
+        pickerFilterCat = 'all';
+        activeTierMeta = tier;
+
+        document.querySelectorAll('.pricing-card').forEach(function (el) {
+            el.classList.toggle('is-selected', el.getAttribute('data-package-id') === tierId);
+        });
+
+        var dlg = document.getElementById('placePickerDialog');
+        var sub = document.getElementById('pickerDialogSubtitle');
+        if (sub) {
+            sub.textContent =
+                tier.title +
+                ' · pick exactly ' +
+                pickerLimit +
+                ' places from ' +
+                places.length +
+                ' locations';
+        }
+        var search = document.getElementById('pickerSearch');
+        if (search) search.value = '';
+        setPickerToast('');
+        renderCategoryChips();
+        renderPickerList();
+        updatePickerProgressUi();
+        if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+        window.setTimeout(function () {
+            if (search) search.focus();
+        }, 100);
+    }
+
+    function closePlacePicker() {
+        var dlg = document.getElementById('placePickerDialog');
+        if (dlg && dlg.open) dlg.close();
+    }
+
+    function applyPickerSelection() {
+        if (pickerOrder.length !== pickerLimit) return;
+        lastSelectedStops = pickerOrder.map(function (name) {
+            return placeByName[name];
+        }).filter(Boolean);
+        closePlacePicker();
+        renderSelectionStrip();
+        showTripMapInline();
+    }
+
+    function renderSelectionStrip() {
+        var strip = document.getElementById('selectionStrip');
+        var title = document.getElementById('selectionTitle');
+        var sub = document.getElementById('selectionSubtitle');
+        var chips = document.getElementById('selectionChips');
+        if (!strip || !chips) return;
+        strip.classList.remove('hidden');
+        if (title && activeTierMeta) title.textContent = activeTierMeta.title;
+        if (sub && activeTierMeta) {
+            sub.textContent =
+                activeTierMeta.displayRange +
+                ' · ' +
+                lastSelectedStops.length +
+                ' stops · map order uses nearest-next from your start';
+        }
+        chips.innerHTML = '';
+        lastSelectedStops.forEach(function (p, i) {
+            var span = document.createElement('span');
+            span.className = 'selection-chip';
+            span.innerHTML =
+                '<span class="num">' +
+                (i + 1) +
+                '</span><span>' +
+                escapeHtml(p.name) +
+                '</span>';
+            chips.appendChild(span);
+        });
+    }
+
+    document.getElementById('pickerSearch').addEventListener('input', function () {
+        document.querySelectorAll('.picker-row').forEach(function (row) {
+            var name = row.getAttribute('data-place-name');
+            var p = placeByName[name];
+            row.classList.toggle('is-hidden', p && !placeMatchesFilters(p));
+        });
+    });
+    document.getElementById('pickerClearBtn').addEventListener('click', function () {
+        pickerOrder = [];
+        syncPickerRows();
+        updatePickerProgressUi();
+        setPickerToast('');
+    });
+    document.getElementById('pickerCancelBtn').addEventListener('click', closePlacePicker);
+    document.getElementById('pickerApplyBtn').addEventListener('click', applyPickerSelection);
+
+    document.getElementById('editSelectionBtn').addEventListener('click', function () {
+        if (!activeTierMeta) return;
+        pickerOrder = lastSelectedStops.map(function (p) {
+            return p.name;
+        });
+        pickerLimit = activeTierMeta.pickLimit;
+        pickerTierId = activeTierMeta.id;
+        pickerFilterCat = 'all';
+        var search = document.getElementById('pickerSearch');
+        if (search) search.value = '';
+        setPickerToast('');
+        var dlg = document.getElementById('placePickerDialog');
+        var sub = document.getElementById('pickerDialogSubtitle');
+        if (sub) {
+            sub.textContent =
+                activeTierMeta.title +
+                ' · pick exactly ' +
+                pickerLimit +
+                ' places';
+        }
+        renderCategoryChips();
+        renderPickerList();
+        updatePickerProgressUi();
+        if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+    });
+    document.getElementById('showMapFromStripBtn').addEventListener('click', showTripMapInline);
+
+    function ensurePkgMap() {
+        if (typeof L === 'undefined') return false;
+        var el = document.getElementById('pkgTripMap');
+        if (!el) return false;
+        if (pkgMap) {
+            if (!pkgHospitalLayer) pkgHospitalLayer = L.layerGroup().addTo(pkgMap);
+            window.setTimeout(function () {
+                pkgMap.invalidateSize();
+            }, 120);
+            return true;
+        }
+        pkgMap = L.map('pkgTripMap', { scrollWheelZoom: true }).setView([13.6288, 79.4192], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(pkgMap);
+        pkgMarkersLayer = L.layerGroup().addTo(pkgMap);
+        pkgRouteLayer = L.layerGroup().addTo(pkgMap);
+        pkgStartLayer = L.layerGroup().addTo(pkgMap);
+        pkgHospitalLayer = L.layerGroup().addTo(pkgMap);
+        return true;
+    }
+
+    function setMapStatus(msg) {
+        var s = document.getElementById('pkgMapStatus');
+        if (s) s.textContent = msg || '';
+    }
+
+    function geocodeNominatim(query, signal) {
+        var url =
+            'https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=in&q=' +
+            encodeURIComponent(query);
+        return fetch(url, {
+            signal: signal,
+            headers: { Accept: 'application/json', 'Accept-Language': 'en' }
+        })
+            .then(function (r) {
+                return r.json();
+            })
+            .then(function (arr) {
+                if (!arr || !arr.length) return null;
+                return {
+                    lat: parseFloat(arr[0].lat),
+                    lng: parseFloat(arr[0].lon),
+                    label: arr[0].display_name || query
+                };
+            })
+            .catch(function () {
+                return null;
+            });
+    }
+
+    function buildStartGeocodeCandidates(raw) {
+        var q = (raw || '').trim();
+        if (!q) return ['Tirupati, Andhra Pradesh, India'];
+        var out = [q];
+        var lower = q.toLowerCase();
+        if (
+            lower.indexOf('tirupati') === -1 &&
+            lower.indexOf('andhra') === -1 &&
+            lower.indexOf('india') === -1
+        ) {
+            out.push(q + ', Tirupati, Andhra Pradesh, India');
+        }
+        out.push('Tirupati Railway Station, Tirupati, Andhra Pradesh, India');
+        return out;
+    }
+
+    function resolveStartGeoWithFallback(rawLoc, signal) {
+        var candidates = buildStartGeocodeCandidates(rawLoc);
+        var i = 0;
+        function nextTry() {
+            if (i >= candidates.length) {
+                return Promise.resolve({
+                    lat: 13.6288,
+                    lng: 79.4192,
+                    label: 'Tirupati (fallback center)',
+                    fallback: true
+                });
+            }
+            var q = candidates[i++];
+            return geocodeNominatim(q, signal).then(function (geo) {
+                if (geo && !isNaN(geo.lat) && !isNaN(geo.lng)) return geo;
+                return nextTry();
+            });
+        }
+        return nextTry();
+    }
+
+    function fetchOsrmRoute(latlngs, signal) {
+        if (!latlngs || latlngs.length < 2) return Promise.resolve(null);
+        var slice = latlngs.slice(0, 90);
+        var path = slice
+            .map(function (p) {
+                return p[1] + ',' + p[0];
+            })
+            .join(';');
+        var url = OSRM_BASE + '/' + path + '?overview=full&geometries=geojson';
+        return fetch(url, { signal: signal })
+            .then(function (r) {
+                return r.json();
+            })
+            .then(function (j) {
+                if (j.code !== 'Ok' || !j.routes || !j.routes[0]) return null;
+                return j.routes[0].geometry.coordinates.map(function (c) {
+                    return [c[1], c[0]];
+                });
+            })
+            .catch(function () {
+                return null;
+            });
+    }
+
+    function showTripMapInline() {
+        if (!lastSelectedStops.length) return;
+        var locInput = document.getElementById('userStartLocation');
+        var gpsEl = document.getElementById('useLiveGps');
+        var loc = locInput ? locInput.value.trim() : '';
+        var useGps = gpsEl && gpsEl.checked;
+        if (!useGps && !loc) {
+            alert('Enter a start location, or turn on “Use live GPS”.');
+            return;
+        }
+
+        var mapSec = document.getElementById('mapSection');
+        if (mapSec) mapSec.classList.remove('hidden');
+        if (!ensurePkgMap()) {
+            setMapStatus('Map library failed to load. Check your network and refresh.');
+            return;
+        }
+
+        pkgMarkersLayer.clearLayers();
+        pkgRouteLayer.clearLayers();
+        pkgStartLayer.clearLayers();
+        if (pkgHospitalLayer) pkgHospitalLayer.clearLayers();
+        if (routeAbort) routeAbort.abort();
+        routeAbort = new AbortController();
+        var signal = routeAbort.signal;
+
+        setMapStatus('Resolving start point…');
+
+        function drawStopsAndRoute(startLat, startLng, startLabel) {
+            var ordered = orderStopsNearestFromStart(lastSelectedStops, startLat, startLng);
+
+            var startIcon = L.divIcon({
+                className: 'pkg-start-icon',
+                html:
+                    '<div style="width:36px;height:36px;border-radius:50%;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;">\u2302</div>',
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            });
+            L.marker([startLat, startLng], { icon: startIcon, zIndexOffset: 800 })
+                .bindPopup(buildStartPopupHtml(startLabel), {
+                    className: 'pkg-map-popup',
+                    maxWidth: 320
+                })
+                .addTo(pkgStartLayer);
+
+            ordered.forEach(function (p, idx) {
+                var num = idx + 1;
+                var icon = L.divIcon({
+                    className: 'pkg-num-icon',
+                    html:
+                        '<div style="min-width:28px;height:28px;padding:0 8px;border-radius:999px;background:#0d9488;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2);">' +
+                        num +
+                        '</div>',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                });
+                L.marker([p.lat, p.lng], { icon: icon, zIndexOffset: 400 + idx })
+                    .bindPopup(buildPlacePopupHtml(p, num), {
+                        className: 'pkg-map-popup',
+                        maxWidth: 320
+                    })
+                    .addTo(pkgMarkersLayer);
+            });
+
+            var waypoints = [[startLat, startLng]].concat(
+                ordered.map(function (p) {
+                    return [p.lat, p.lng];
+                })
+            );
+
+            setMapStatus('Loading road route…');
+            fetchOsrmRoute(waypoints, signal).then(function (coords) {
+                if (signal.aborted) return;
+                if (coords && coords.length >= 2) {
+                    L.polyline(coords, { color: '#0f766e', weight: 5, opacity: 0.88 }).addTo(pkgRouteLayer);
+                } else {
+                    L.polyline(waypoints, {
+                        color: '#94a3b8',
+                        weight: 3,
+                        dashArray: '8 6',
+                        opacity: 0.75
+                    }).addTo(pkgRouteLayer);
+                    setMapStatus('Straight-line path shown (driving route unavailable for this many points).');
+                }
+                var b = [];
+                waypoints.forEach(function (w) {
+                    b.push(w);
+                });
+                if (b.length) pkgMap.fitBounds(b, { padding: [36, 36], maxZoom: 12, animate: true });
+                window.setTimeout(function () {
+                    pkgMap.invalidateSize();
+                }, 200);
+                if (coords && coords.length >= 2) {
+                    setMapStatus('Driving route · nearest-next order from your start across ' + ordered.length + ' selected stops.');
+                }
+            });
+
+            document.getElementById('mapSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        if (useGps && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (pos) {
+                    if (signal.aborted) return;
+                    drawStopsAndRoute(pos.coords.latitude, pos.coords.longitude, 'Live GPS location');
+                },
+                function () {
+                    setMapStatus('GPS was denied or unavailable. Enter a location above and try again.');
+                },
+                { enableHighAccuracy: true, timeout: 18000, maximumAge: 0 }
+            );
+        } else {
+            resolveStartGeoWithFallback(loc || 'Tirupati', signal).then(function (geo) {
+                if (signal.aborted) return;
+                drawStopsAndRoute(geo.lat, geo.lng, geo.label || loc);
+                if (geo && geo.fallback) {
+                    setMapStatus('Address lookup was weak, so map started from Tirupati center.');
+                }
+            });
+        }
+    }
+
+    function renderEmergencyHospitalList() {
+        var root = document.getElementById('emergencyListRoot');
+        if (!root) return;
+        if (!hospitalStubs.length) {
+            root.innerHTML = '<p style="padding:0.5rem 1rem;font-size:0.8125rem;color:#64748b;">No hospitals found in CSV.</p>';
+            return;
+        }
+        var ul = document.createElement('ul');
+        hospitalStubs.forEach(function (h) {
+            var li = document.createElement('li');
+            li.innerHTML =
+                '<strong>' +
+                escapeHtml(h.name) +
+                '</strong><span class="meta">' +
+                escapeHtml(h.category) +
+                (h.timings ? ' · ' + escapeHtml(h.timings) : '') +
+                '</span>';
+            ul.appendChild(li);
+        });
+        root.innerHTML = '';
+        root.appendChild(ul);
+    }
+
+    function openEmergencyPanel() {
+        var panel = document.getElementById('emergencyPanel');
+        var bd = document.getElementById('emergencyBackdrop');
+        if (panel) {
+            panel.removeAttribute('hidden');
+            panel.setAttribute('aria-hidden', 'false');
+            panel.classList.add('is-open');
+        }
+        if (bd) {
+            bd.classList.add('is-open');
+            bd.setAttribute('aria-hidden', 'false');
+        }
+        renderEmergencyHospitalList();
+        var hint = document.getElementById('emergencyMapHint');
+        if (hint) hint.textContent = '';
+    }
+
+    function closeEmergencyPanel() {
+        var panel = document.getElementById('emergencyPanel');
+        var bd = document.getElementById('emergencyBackdrop');
+        if (panel) {
+            panel.classList.remove('is-open');
+            panel.setAttribute('hidden', 'hidden');
+            panel.setAttribute('aria-hidden', 'true');
+        }
+        if (bd) {
+            bd.classList.remove('is-open');
+            bd.setAttribute('aria-hidden', 'true');
+        }
+    }
+
+    async function geocodeHospitalRecord(h, signal) {
+        if (hospitalGeocodeCache[h.name]) return hospitalGeocodeCache[h.name];
+        var fb = EMERGENCY_HOSPITAL_LATLNG_FALLBACK[h.name];
+        if (fb) {
+            hospitalGeocodeCache[h.name] = { lat: fb.lat, lng: fb.lng, label: h.name };
+            return hospitalGeocodeCache[h.name];
+        }
+        var q = h.name + ', Tirupati, Andhra Pradesh, India';
+        var geo = await geocodeNominatim(q, signal);
+        if (geo && !isNaN(geo.lat) && !isNaN(geo.lng)) {
+            hospitalGeocodeCache[h.name] = { lat: geo.lat, lng: geo.lng, label: geo.label || q };
+            return hospitalGeocodeCache[h.name];
+        }
+        return null;
+    }
+
+    async function geocodeAllHospitals(signal) {
+        var out = [];
+        for (var i = 0; i < hospitalStubs.length; i++) {
+            if (signal.aborted) return out;
+            var h = hospitalStubs[i];
+            var cached = hospitalGeocodeCache[h.name];
+            var fb = EMERGENCY_HOSPITAL_LATLNG_FALLBACK[h.name];
+            var g = cached || (fb ? { lat: fb.lat, lng: fb.lng, label: h.name } : null);
+            if (!g) g = await geocodeHospitalRecord(h, signal);
+            if (g) {
+                out.push({
+                    name: h.name,
+                    category: h.category,
+                    timings: h.timings,
+                    lat: g.lat,
+                    lng: g.lng
+                });
+            }
+        }
+        return out;
+    }
+
+    function showEmergencyNearestHospitals() {
+        var locInput = document.getElementById('userStartLocation');
+        var gpsEl = document.getElementById('useLiveGps');
+        var loc = locInput ? locInput.value.trim() : '';
+        var useGps = gpsEl && gpsEl.checked;
+        var btn = document.getElementById('emergencyShowMapBtn');
+        var hint = document.getElementById('emergencyMapHint');
+        if (!useGps && !loc) {
+            if (hint) hint.textContent = 'Enter a start address or enable live GPS (same as your trip route).';
+            return;
+        }
+        if (emergencyAbort) emergencyAbort.abort();
+        emergencyAbort = new AbortController();
+        var signal = emergencyAbort.signal;
+        if (btn) btn.disabled = true;
+        if (hint) hint.textContent = 'Locating nearest hospitals…';
+
+        function fail(msg) {
+            if (hint) hint.textContent = msg || 'Could not complete.';
+            if (btn) btn.disabled = false;
+        }
+
+        function drawEmergencyFromStart(startLat, startLng, startLabel) {
+            geocodeAllHospitals(signal)
+                .then(function (geoHospitals) {
+                    if (signal.aborted) return;
+                    if (btn) btn.disabled = false;
+                    if (!geoHospitals.length) {
+                        fail('Could not geocode hospitals. Try again later.');
+                        return;
+                    }
+                    geoHospitals.sort(function (a, b) {
+                        return (
+                            haversineKm(startLat, startLng, a.lat, a.lng) -
+                            haversineKm(startLat, startLng, b.lat, b.lng)
+                        );
+                    });
+                    var top3 = geoHospitals.slice(0, 3);
+                    var mapSec = document.getElementById('mapSection');
+                    if (mapSec) mapSec.classList.remove('hidden');
+                    if (!ensurePkgMap()) {
+                        fail('Map failed to load.');
+                        return;
+                    }
+                    // Emergency mode must replace package-selected markers/routes completely.
+                    if (routeAbort) routeAbort.abort();
+                    if (pkgMarkersLayer) pkgMarkersLayer.clearLayers();
+                    if (pkgRouteLayer) pkgRouteLayer.clearLayers();
+                    if (pkgStartLayer) pkgStartLayer.clearLayers();
+                    if (pkgHospitalLayer) pkgHospitalLayer.clearLayers();
+                    var startIcon = L.divIcon({
+                        className: 'pkg-em-start',
+                        html:
+                            '<div style="width:34px;height:34px;border-radius:50%;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;">\u2302</div>',
+                        iconSize: [34, 34],
+                        iconAnchor: [17, 17]
+                    });
+                    L.marker([startLat, startLng], { icon: startIcon, zIndexOffset: 900 })
+                        .bindPopup(buildStartPopupHtml(startLabel), {
+                            className: 'pkg-map-popup',
+                            maxWidth: 320
+                        })
+                        .addTo(pkgHospitalLayer);
+
+                    top3.forEach(function (h, idx) {
+                        var n = idx + 1;
+                        var ic = L.divIcon({
+                            className: 'pkg-hosp-icon',
+                            html:
+                                '<div style="min-width:30px;height:30px;border-radius:50%;background:#dc2626;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);">' +
+                                n +
+                                '</div>',
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 15]
+                        });
+                        L.marker([h.lat, h.lng], { icon: ic, zIndexOffset: 500 + idx })
+                            .bindPopup(buildHospitalPopupHtml(h, n), {
+                                className: 'pkg-map-popup',
+                                maxWidth: 320
+                            })
+                            .addTo(pkgHospitalLayer);
+                    });
+
+                    var seqPts = [[startLat, startLng]].concat(
+                        top3.map(function (h) {
+                            return [h.lat, h.lng];
+                        })
+                    );
+                    fetchOsrmTripOrder(seqPts, signal).then(function (orderIdx) {
+                        if (signal.aborted) return;
+                        var orderedPts =
+                            orderIdx && orderIdx.length === seqPts.length
+                                ? orderIdx.map(function (ix) {
+                                      return seqPts[ix];
+                                  })
+                                : seqPts;
+                        fetchOsrmRoute(orderedPts, signal).then(function (coords) {
+                            if (signal.aborted) return;
+                            if (coords && coords.length >= 2) {
+                                L.polyline(coords, { color: '#b91c1c', weight: 5, opacity: 0.9 }).addTo(pkgHospitalLayer);
+                            } else {
+                                L.polyline(orderedPts, {
+                                    color: '#f87171',
+                                    weight: 3,
+                                    dashArray: '6 5',
+                                    opacity: 0.85
+                                }).addTo(pkgHospitalLayer);
+                            }
+                            var b = orderedPts.slice();
+                            if (b.length && pkgMap) pkgMap.fitBounds(b, { padding: [40, 40], maxZoom: 13, animate: true });
+                            window.setTimeout(function () {
+                                if (pkgMap) pkgMap.invalidateSize();
+                            }, 200);
+                            if (hint) {
+                                hint.textContent =
+                                    'Driving route via OSRM trip optimization (start fixed, last hospital fixed).';
+                            }
+                            setMapStatus('Emergency: 3 nearest hospitals + optimized driving route.');
+                            closeEmergencyPanel();
+                            if (mapSec) mapSec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        });
+                    });
+                })
+                .catch(function () {
+                    if (btn) btn.disabled = false;
+                    fail('Network error.');
+                });
+        }
+
+        if (useGps && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (pos) {
+                    if (signal.aborted) return;
+                    drawEmergencyFromStart(pos.coords.latitude, pos.coords.longitude, 'Live GPS');
+                },
+                function () {
+                    fail('GPS denied. Enter an address under Route start.');
+                },
+                { enableHighAccuracy: true, timeout: 18000, maximumAge: 0 }
+            );
+        } else {
+            geocodeNominatim(loc || 'Tirupati, India', signal).then(function (geo) {
+                if (signal.aborted) return;
+                if (!geo || isNaN(geo.lat)) {
+                    fail('Could not geocode your start location.');
+                    if (btn) btn.disabled = false;
+                    return;
+                }
+                drawEmergencyFromStart(geo.lat, geo.lng, geo.label || loc);
+            });
+        }
+    }
+
+    var emergencyFabEl = document.getElementById('emergencyFab');
+    if (emergencyFabEl) emergencyFabEl.addEventListener('click', openEmergencyPanel);
+    var emergencyCloseBtn = document.getElementById('emergencyCloseBtn');
+    if (emergencyCloseBtn) emergencyCloseBtn.addEventListener('click', closeEmergencyPanel);
+    var emergencyBackdropEl = document.getElementById('emergencyBackdrop');
+    if (emergencyBackdropEl) emergencyBackdropEl.addEventListener('click', closeEmergencyPanel);
+    var emergencyShowMapBtn = document.getElementById('emergencyShowMapBtn');
+    if (emergencyShowMapBtn) emergencyShowMapBtn.addEventListener('click', showEmergencyNearestHospitals);
+
+    async function load() {
+        var errEl = document.getElementById('loadError');
+        try {
+            var res = await fetch(CSV_URL);
+            if (!res.ok) throw new Error('Could not load CSV');
+            var text = await res.text();
+            var lines = text.trim().split(/\r?\n/);
+            places = [];
+            hospitalStubs = [];
+            placeByName = {};
+            for (var i = 1; i < lines.length; i++) {
+                var raw = lines[i];
+                if (/^name of the place/i.test(raw) || /^name,/i.test(raw)) continue;
+                var row = parseCSVLine(raw);
+                if (!row) continue;
+                if (row.needsGeocode) {
+                    hospitalStubs.push({
+                        name: row.name,
+                        category: row.category,
+                        timings: row.timings
+                    });
+                    continue;
+                }
+                places.push(row);
+                placeByName[row.name] = row;
+            }
+            if (!places.length) throw new Error('No places parsed');
+            renderPackageCards();
+        } catch (e) {
+            if (errEl) {
+                errEl.textContent = (e && e.message) || String(e);
+                errEl.classList.remove('hidden');
+            }
+        }
+    }
+
+    load();
+})();
+    </script>
+</body>
+</html>
